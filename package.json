@@ -10,7 +10,12 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "axios": "^1.7.9",
+    "html-to-image": "^1.11.11",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.2",
     "lucide-react": "^0.469.0",
+    "mongoose": "^8.9.2",
     "next": "15.1.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

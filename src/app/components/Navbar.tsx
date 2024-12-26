@@ -6,11 +6,13 @@ import { usePathname } from 'next/navigation'
 import { HomeIcon, CubeIcon, DocumentTextIcon, ClockIcon, CogIcon, UserCircleIcon } from '@heroicons/react/24/outline'
 
 const navItems = [
+  { name: 'New Bill', href: '/invoicing', icon: HomeIcon },
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'Stocks', href: '/stocks', icon: CubeIcon },
   { name: 'Invoices', href: '/invoices', icon: DocumentTextIcon },
   { name: 'History', href: '/history', icon: ClockIcon },
   { name: 'Settings', href: '/settings', icon: CogIcon },
+  
 ]
 
 export default function Navbar() {
