@@ -14,11 +14,16 @@ import InvoicePage from "../components/DwnBtn";
     carat: number;
     perCarat: number;
   }
+  interface Extra {
+    description: string;
+    amount: number;
+  }
 
   export default function Home() {
     const [items, setItems] = useState<Item[]>([
       { description: "", comm: 0, fare: 0, quantity: 1, price: 0 , eachItemTotal: 0 , carat:0 , perCarat:0 },
     ]);
+    const [extra , setExtra] = useState<Extra[]>([{description: "" , amount:0}]);
     const [clientName, setClientName] = useState<string>("");
     const [notes, setNotes] = useState<string>("");
     const [billNo, setBillNo] = useState<number>(1);
@@ -60,8 +65,13 @@ import InvoicePage from "../components/DwnBtn";
           (item.carat || 0) * perCarat;
         return { ...item, eachItemTotal, perCarat };
       });
-  
-      const billTotal = updatedItems.reduce((total, item) => total + item.eachItemTotal, 0);
+
+      const extraTotal = extra.reduce((total, item) => total + item.amount, 0);
+      console.log(extraTotal, "total extra");
+      console.log(extra, "total extra");
+
+      const billTotal = updatedItems.reduce((total, item) => total + item.eachItemTotal, 0) + extraTotal  ;
+      console.log(billTotal);
   
       // Only update if items have actually changed
       const hasChanged = JSON.stringify(items) !== JSON.stringify(updatedItems);
@@ -70,12 +80,13 @@ import InvoicePage from "../components/DwnBtn";
       }
   
       setBillTotal(billTotal); // Update billTotal regardless
-    }, [items]);
+    }, [items, extra]);
     
     useEffect(() => {
       console.log([items]);
       updateItemsAndTotal();
-    }, [items , updateItemsAndTotal]);
+      
+    }, [items , extra, updateItemsAndTotal]);
     
     
     
@@ -88,6 +99,7 @@ import InvoicePage from "../components/DwnBtn";
       balance: number;
       paid: number;
       items: Item[];
+      extra: Extra[];
       notes: string;
       total: number;
     }
@@ -99,6 +111,7 @@ import InvoicePage from "../components/DwnBtn";
         balance,
         paid,
         items,
+        extra, // need to add this
         notes,
         total: billTotal,
       };
@@ -155,6 +168,25 @@ import InvoicePage from "../components/DwnBtn";
       setItems(updatedItems);
     };
 
+    const addItem2 = () => {
+      setExtra([...extra , { description: "", amount: 0}]);
+    };
+    console.log(extra , "extra");
+
+    const removeItem2 = (index: number) => {
+      setExtra(extra.filter((_, i) => i !== index));
+    };
+
+    const updateItem2 = (index: number, field: keyof Extra, value: string | number) => {
+      const updatedItems = [...extra];
+      if (field === 'description' && typeof value === 'string') {
+        updatedItems[index][field] = value;}
+        else if(field === 'amount' && typeof value === 'number' ){
+        updatedItems[index][field] = value;
+        }
+      setExtra(updatedItems);
+    };
+
 
     const handleFareChange = () => {
       setFare((prevFare) => !prevFare);
@@ -167,28 +199,6 @@ import InvoicePage from "../components/DwnBtn";
         }))
       );
     };
-    // const invoiceDetail = {
-    //   billNo: "INV123",
-    //   clientName: "John Doe",
-    //   invoiceDate: "2024-12-26",
-    //   balance: 500,
-    //   paid: 1000,
-    //   items: [
-    //     {
-    //       description: "Gold Ring",
-    //       comm: 5,
-    //       fare: 10,
-    //       quantity: 2,
-    //       price: 2000,
-    //       eachItemTotal: 4000,
-    //       carat: 22,
-    //       perCarat: 100,
-    //     },
-    //     // Add more items as needed
-    //   ],
-    //   notes: "Thank you for your business!",
-    //   total: 1500,
-    // };
 
     const showIn = () =>{
       if(showInvoice){
@@ -269,7 +279,7 @@ import InvoicePage from "../components/DwnBtn";
                 <label className="sm:text-black">Commission + Fare</label>
               </div>
             </div>
-            <div className="sm:text-black">
+            <div className="sm:text-black ">
               <label className="font-medium flex  space-x-2   mt-2  ">
                 <span className="flex w-[78%] p-2">Invoice Item </span>
                 <button
@@ -434,6 +444,79 @@ import InvoicePage from "../components/DwnBtn";
                 +
               </button>
             </div>
+
+              {/* writing extra here  */}
+              <div className="sm:text-black ">
+              <label className="font-medium flex  space-x-2   mt-2  ">
+                <span className="flex w p-2">Something Extra ? </span>
+                <button
+                type="button"
+                onClick={addItem2}
+                className=" px-4 py-2  bg-orange-500 text-white rounded "
+              >
+                +
+              </button>
+                {/* <span className='w-20 p-2  '>Qty </span>
+          <span className='w-24 p-2 '>Price</span> */}
+              </label>
+              {extra.map((item, index) => (
+                <div
+                key={index}
+                className="container1 pb-2 flex flex-wrap sm:flex-nowrap space-x-2 bg-gray-100 items-center mb-2 rounded-md px-1"
+              >
+                {/* First three fields: Item, Quantity, and Price */}
+                <div className="flex  flex-col order-1 flex-1 ">
+                  <label htmlFor={`desc-${index}`} className="text-sm  text-gray-700">
+                    Item 
+                  </label>
+                  <input
+                    id={`desc-${index}`}
+                    type="text"
+                    placeholder="Something extra"
+                    value={item.description}
+                    onChange={(e) =>
+                      updateItem2(index, "description", e.target.value)
+                    }
+                    // onFocus={() => handleInputFocus1(index)}
+                    // onBlur={handleInputBlur1}
+                    className="py-2 pl-2 border rounded text-black"
+                    autoComplete="off"
+                  />
+                </div>
+
+              
+                <div className={`flex flex-col order-6 basis-[30%] max-w-[30%]  `} >
+                  <label htmlFor={`itemTotal-${index}`} className="text-sm text-gray-700">
+                    Amount
+                  </label>
+                  <input
+                    id={`itemTotal-${index}`}
+                    type="number"
+                    placeholder="Amount"
+                    value={item.amount}
+                    onChange={(e) =>
+                      updateItem2(index, "amount", parseInt(e.target.value, 10))
+                    }
+                    
+                    className="p-2 border rounded text-black"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeItem2(index)}
+                  className="px-2 mb-[1%] text-white order-7 bg-red-500 rounded h-2/3 self-end"
+                >
+                  -
+                </button>
+              
+              
+              </div>
+          
+              
+              
+              ))}
+            </div>
+
             <div className="flex items-center">
           <div className="mt-2 mr-4">
             <label htmlFor="balance" className= { `font-medium ${balance >=0 ? "text-green-700 " : "text-red-700"}`}  >

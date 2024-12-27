@@ -6,18 +6,56 @@ import Link from 'next/link'
 export default function SignUp() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [contact, setContact] = useState("")
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // Handle sign up logic here
-    console.log('Sign up attempt with:', { name, email, password, confirmPassword })
+
+    // Clear previous messages
+    setError('')
+    setSuccess('')
+
+    // Validate form
     if (password !== confirmPassword) {
-      alert("Passwords don't match")
+      setError("Passwords don't match")
       return
     }
-    // Additional sign up logic would go here
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long')
+      return
+    }
+
+    // Handle sign up logic
+    setLoading(true)
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password, contact, role: 'owner' }), // Default role is 'owner'
+      })
+      const data = await res.json()
+
+      if (res.ok) {
+        setSuccess('User registered successfully!')
+        setName('')
+        setEmail('')
+        setPassword('')
+        setConfirmPassword('')
+      } else {
+        setError(data.error || 'Something went wrong!')
+      }
+    } catch (err) {
+      setError(`${err}`)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -28,6 +66,15 @@ export default function SignUp() {
             Create your account
           </h2>
         </div>
+
+        {error && (
+          <div className="text-red-500 text-center">{error}</div>
+        )}
+
+        {success && (
+          <div className="text-green-500 text-center">{success}</div>
+        )}
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <input type="hidden" name="remember" value="true" />
           <div className="rounded-md shadow-sm -space-y-px">
@@ -61,6 +108,21 @@ export default function SignUp() {
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="contact" className="sr-only">
+                Phone Number
+              </label>
+              <input
+                id="contact"
+                name="contact"
+                type="number"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                placeholder="Phone Number"
+                value={contact}
+                onChange={(e) => setContact(e.target.value)}
               />
             </div>
             <div>
@@ -100,9 +162,11 @@ export default function SignUp() {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${loading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              disabled={loading}
             >
-              Sign up
+              {loading ? 'Signing Up...' : 'Sign up'}
             </button>
           </div>
         </form>
@@ -118,4 +182,3 @@ export default function SignUp() {
     </div>
   )
 }
-

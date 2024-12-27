@@ -1,11 +1,41 @@
 import { connectDB } from "@/dbConfig/dbConfig";// Replace with your MongoDB connection helper
 import Invoice from "@/models/invoices";
 import { NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
+
 
 connectDB();
 
 
+interface JwtPayloadWithUserId {
+  userId: string;
+  role: string;
+  businesses: string[];
+  hasBusiness: boolean;
+  iat?: number;
+  exp?: number;
+}
 export async function POST(req: NextRequest) {
+  const retToken = req.cookies.get('token')?.value || '';
+          if (!retToken) {
+            return NextResponse.json({ error: "Authentication token is missing" }, { status: 401 });
+          }
+      
+          // Decode and verify the token
+          let decoded ;
+          try {
+            decoded = jwt.verify(retToken, process.env.JWT_SECRET || "your-secret-key") as JwtPayloadWithUserId;
+            console.log(decoded , "decoding");
+            console.log(decoded.businesses[0] , "businesslist");
+          } catch (error) {
+            return NextResponse.json({ error: error }, { status: 401 });
+          }
+  
+          const businessId = decoded.businesses[0]
+
+
+
+
   
   try {
    
@@ -14,6 +44,7 @@ export async function POST(req: NextRequest) {
     const {
       billNo,
       clientName,
+      clientId,
       invoiceDate,
       balance,
       paid,
@@ -33,6 +64,8 @@ export async function POST(req: NextRequest) {
     const newInvoice =  new Invoice({
       billNo,
       clientName,
+      clientId,
+      businessId,
       invoiceDate,
       balance,
       paid,

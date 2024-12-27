@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import Link from 'next/link';
 
 type user ={
     id: number;
@@ -58,6 +59,12 @@ const handleDeleteUser = (id: number) => {
           <PlusIcon className="h-5 w-5 mr-2" />
           Add User
         </button>
+        <Link href="/registerbizz" >
+        
+          <PlusIcon className="h-5 w-5 mr-2" />
+          Register Business
+          </Link>
+        
       </div>
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">

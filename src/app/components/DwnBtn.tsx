@@ -14,6 +14,10 @@ interface Item {
     carat: number;
     perCarat: number;
 }
+interface Extra {
+  description: string;
+  amount: number,
+}
 
 interface InvoicePageProps {
   invoiceDetail: {
@@ -23,6 +27,7 @@ interface InvoicePageProps {
       balance: number;
       paid: number;
       items: Item[];
+      extra: Extra[];
       notes: string;
       total: number;
   };
@@ -32,57 +37,7 @@ interface InvoicePageProps {
 const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceDetail, butFun }) => {
   const invoiceRef = useRef<HTMLDivElement>(null);
 
-  // const invoiceDetail: InvoiceDetails = {
-  //   billNo: "INV-001",
-  //   clientName: "John Doe",
-  //   invoiceDate: "2024-12-26",
-  //   balance: 500,
-  //   paid: 1000,
-  //   items: [
-  //     {
-  //       description: "Gold Ring",
-  //       comm: 10,
-  //       fare: 5,
-  //       quantity: 2,
-  //       price: 500,
-  //       eachItemTotal: 1010,
-  //       carat: 24,
-  //       perCarat: 42,
-  //     },
-  //     {
-  //       description: "Gold Ring",
-  //       comm: 10,
-  //       fare: 5,
-  //       quantity: 2,
-  //       price: 500,
-  //       eachItemTotal: 1010,
-  //       carat: 24,
-  //       perCarat: 42,
-  //     },
-  //     {
-  //       description: "Gold Ring",
-  //       comm: 10,
-  //       fare: 5,
-  //       quantity: 2,
-  //       price: 500,
-  //       eachItemTotal: 1010,
-  //       carat: 24,
-  //       perCarat: 42,
-  //     },
-  //     {
-  //       description: "Gold Ring",
-  //       comm: 10,
-  //       fare: 5,
-  //       quantity: 2,
-  //       price: 500,
-  //       eachItemTotal: 1010,
-  //       carat: 24,
-  //       perCarat: 42,
-  //     },
-  //   ],
-  //   notes: "Thank you for your business!",
-  //   total: 1500,
-  // };
+ 
 
   const handleDownloadJPG = async () => {
     if (invoiceRef.current) {
@@ -172,6 +127,16 @@ const handleDownloadPDF = async () => {
               <td className="border border-gray-300 px-2 py-3 font-bold text-center">{item.eachItemTotal}</td>
             </tr>
           ))}
+          {
+            invoiceDetail.extra.map((item, index) =>(
+              <tr key={index} >
+              <td className="border border-gray-300 px-2 py-3 text-center  " colSpan={4}>{item.description}</td>
+             
+              <td className="border border-gray-300 px-2 py-3 text-center"></td>
+              <td className="border border-gray-300 px-2 py-3 font-bold text-center">{item.amount}</td>
+            </tr>
+            ) )
+          }
         </tbody>
       </table>
     </div>
