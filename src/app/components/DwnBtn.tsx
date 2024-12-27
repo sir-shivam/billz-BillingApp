@@ -3,32 +3,33 @@ import { toPng } from "html-to-image";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
+
 interface Item {
   description: string;
-  comm: number;
-  fare: number;
-  quantity: number;
-  price: number;
-  eachItemTotal: number;
-  carat: number;
-  perCarat: number;
+    comm: number;
+    fare: number;
+    quantity: number;
+    price: number;
+    eachItemTotal: number;
+    carat: number;
+    perCarat: number;
 }
 
-interface InvoiceDetails {
-  billNo: string;
-  clientName: string;
-  invoiceDate: string;
-  balance: number;
-  paid: number;
-  items: Item[];
-  notes: string;
-  total: number;
-}
-interface InvoiceComponentProps {
-  invoiceDetail: InvoiceDetails;
+interface InvoicePageProps {
+  invoiceDetail: {
+    billNo: number;
+      clientName: string;
+      invoiceDate: string;
+      balance: number;
+      paid: number;
+      items: Item[];
+      notes: string;
+      total: number;
+  };
+  butFun: () => void;  // Define the type of the button function
 }
 
-const InvoicePage: React.FC = ({ invoiceDetail , butFun }) => {
+const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceDetail, butFun }) => {
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   // const invoiceDetail: InvoiceDetails = {

@@ -7,11 +7,11 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     // Handle login logic here
-    console.log('Login attempt with:', { email, password })
-  }
+    console.log('Login attempt with:', { email, password });
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -89,7 +89,7 @@ export default function Login() {
         </form>
         <div className="text-center">
           <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
+            Do not have an account?{' '}
             <Link href="/signup" className="font-medium text-green-600 hover:text-green-500">
               Sign up
             </Link>

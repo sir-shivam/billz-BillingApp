@@ -4,36 +4,65 @@ import { useState } from 'react'
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 
 // Mock data for users
-const initialUsers = [
+interface User {
+  id: number
+  name: string
+  email: string
+  role: string
+}
+
+const initialUsers: User[] = [
   { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Owner' },
   { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Accountant' },
   { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'Accountant' },
-  // Add more mock users here...
 ]
 
 export default function UserManagement() {
-  const [users, setUsers] = useState(initialUsers)
+  const [users, setUsers] = useState<User[]>(initialUsers)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingUser, setEditingUser] = useState(null)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
 
-  const handleAddUser = (newUser) => {
+  const handleAddUser = (newUser: Omit<User, 'id'>) => {
     setUsers([...users, { id: users.length + 1, ...newUser }])
     setIsModalOpen(false)
   }
 
-  const handleEditUser = (user) => {
+  const handleEditUser = (user: User) => {
     setEditingUser(user)
     setIsModalOpen(true)
   }
 
-  const handleUpdateUser = (updatedUser) => {
+  const handleUpdateUser = (updatedUser: User) => {
     setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user))
     setIsModalOpen(false)
     setEditingUser(null)
   }
 
-  const handleDeleteUser = (id) => {
+  const handleDeleteUser = (id: number) => {
     setUsers(users.filter(user => user.id !== id))
+  }
+
+  const handleFormSubmit = () => {
+    const form = document.querySelector('form') as HTMLFormElement
+    if (!form) return // Ensure the form exists
+    const formData = new FormData(form)
+
+    const name = formData.get('userName') as string | null
+    const email = formData.get('userEmail') as string | null
+    const role = formData.get('userRole') as string | null
+
+    if (!name || !email || !role) {
+      alert('Please fill in all fields.')
+      return
+    }
+
+    const newUser = { name, email, role }
+
+    if (editingUser) {
+      handleUpdateUser({ ...editingUser, ...newUser })
+    } else {
+      handleAddUser(newUser)
+    }
   }
 
   return (
@@ -106,7 +135,7 @@ export default function UserManagement() {
                         type="text"
                         name="userName"
                         id="userName"
-                        defaultValue={editingUser?.name}
+                        defaultValue={editingUser?.name || ''}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
                       />
                     </div>
@@ -118,7 +147,7 @@ export default function UserManagement() {
                         type="email"
                         name="userEmail"
                         id="userEmail"
-                        defaultValue={editingUser?.email}
+                        defaultValue={editingUser?.email || ''}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
                       />
                     </div>
@@ -129,7 +158,7 @@ export default function UserManagement() {
                       <select
                         name="userRole"
                         id="userRole"
-                        defaultValue={editingUser?.role}
+                        defaultValue={editingUser?.role || 'Accountant'}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
                       >
                         <option value="Owner">Owner</option>
@@ -142,21 +171,7 @@ export default function UserManagement() {
               <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button
                   type="button"
-                  onClick={() => {
-                    const form = document.querySelector('form')
-                    const formData = new FormData(form)
-                    const newUser = {
-                      name: formData.get('userName'),
-                      email: formData.get('userEmail'),
-                      role: formData.get('userRole')
-                    }
-                    if (editingUser) {
-                      handleUpdateUser({ ...editingUser, ...newUser })
-                    } else {
-                      handleAddUser(newUser)
-                    }
-                    setIsModalOpen(false)
-                  }}
+                  onClick={handleFormSubmit}
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
                 >
                   {editingUser ? 'Update' : 'Add'}
@@ -167,7 +182,7 @@ export default function UserManagement() {
                     setIsModalOpen(false)
                     setEditingUser(null)
                   }}
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:w-auto sm:text-sm"
                 >
                   Cancel
                 </button>
@@ -179,4 +194,3 @@ export default function UserManagement() {
     </div>
   )
 }
-

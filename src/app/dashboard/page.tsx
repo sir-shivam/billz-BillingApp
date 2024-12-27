@@ -10,7 +10,7 @@ type user ={
     role: string;
 }
 
-type newUser = Omit<user, 'id'>;
+
 // Mock data for users
 const initialUsers : user[] = [
   { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Owner' },
@@ -22,27 +22,27 @@ const initialUsers : user[] = [
 export default function UserManagement() {
   const [users, setUsers] = useState(initialUsers)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingUser, setEditingUser] = useState(null)
+  const [editingUser, setEditingUser] = useState<user | null>(null);
 
-  const handleAddUser = (newUser) => {
+  const handleAddUser = (newUser: Omit<user, 'id'>) => {
     setUsers([...users, { id: users.length + 1, ...newUser }])
     setIsModalOpen(false)
   }
 
-  const handleEditUser = (user) => {
-    setEditingUser(user)
-    setIsModalOpen(true)
-  }
+  const handleEditUser = (user: user) => {
+    setEditingUser(user);
+    setIsModalOpen(true);
+  };
 
-  const handleUpdateUser = (updatedUser) => {
-    setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user))
-    setIsModalOpen(false)
-    setEditingUser(null)
-  }
+  const handleUpdateUser = (updatedUser: user) => {
+  setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user))
+  setIsModalOpen(false)
+  setEditingUser(null)
+}
 
-  const handleDeleteUser = (id) => {
-    setUsers(users.filter(user => user.id !== id))
-  }
+const handleDeleteUser = (id: number) => {
+  setUsers(users.filter(user => user.id !== id));
+};
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -151,20 +151,39 @@ export default function UserManagement() {
                 <button
                   type="button"
                   onClick={() => {
-                    const form :any = document.querySelector('form')
-                    const formData = new FormData(form)
-                    const newUser :any  = {
-                      name: formData.get('userName'),
-                      email: formData.get('userEmail'),
-                      role: formData.get('userRole')
+                    // Cast the form element explicitly to an HTMLFormElement
+                    const form = document.querySelector('form') as HTMLFormElement | null;
+                  
+                    if (!form) {
+                      console.error("Form not found");
+                      return;
                     }
+                  
+                    // Create FormData and type the `newUser` object
+                    const formData = new FormData(form);
+                  
+                    // Define the shape of a user object
+                    interface User {
+                      name: string ;
+                      email: string;
+                      role: string ;
+                    }
+                  
+                    const newUser: User = {
+                      name: formData.get('userName') as string ,
+                      email: formData.get('userEmail') as string,
+                      role: formData.get('userRole') as string,
+                    };
+                  
                     if (editingUser) {
-                      handleUpdateUser({ ...editingUser, ...newUser })
+                      handleUpdateUser({ ...editingUser, ...newUser });
                     } else {
-                      handleAddUser(newUser)
+                      handleAddUser(newUser);
                     }
-                    setIsModalOpen(false)
+                  
+                    setIsModalOpen(false);
                   }}
+                  
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
                 >
                   {editingUser ? 'Update' : 'Add'}

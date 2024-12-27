@@ -1,9 +1,7 @@
   "use client"
 
-  import React, { useEffect,FormEvent, useState } from "react";
+  import React, { useEffect,FormEvent, useState, useCallback } from "react";
   import axios from "axios";
-  import { Dispatch, SetStateAction } from "react";
-  import DownloadButton from "../components/Downloadbttn";
 import InvoicePage from "../components/DwnBtn";
   // import { letGet, letPost } from "./Utility/Server";
   interface Item {
@@ -23,22 +21,13 @@ import InvoicePage from "../components/DwnBtn";
     ]);
     const [clientName, setClientName] = useState<string>("");
     const [notes, setNotes] = useState<string>("");
-    const [suggestions, setSuggestions] = useState([]);
-    const [allClients, setAllClients] = useState([]);
-    const [allStocks, setAllStocks] = useState([]); // Store fetched stock names
-    const [suggestions1, setSuggestions1] = useState([]);
     const [billNo, setBillNo] = useState<number>(1);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [activeInputIndex, setActiveInputIndex] = useState(null);
     const [fare, setFare] = useState<boolean>(true);
     const [paid, setPaid] = useState<number>(0); // Paid amount
     const [billTotal , setBillTotal] = useState<number>(0);
     const [invoiceDate, setInvoiceDate] = useState("");
     const [showInvoice , setShowInvoice] = useState(false);
-    let num = 1;
     const [balance, setBalance] = useState<number>(0); // Client balance
-    let CommFare:Number ;
-    let clear = false;
     const getTodayDate = () => {
       const today = new Date();
       const year = today.getFullYear();
@@ -54,34 +43,39 @@ import InvoicePage from "../components/DwnBtn";
     // const [dueDate, setDueDate] = useState(getTodayDate());
     
 
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const input = e.target.value;
       setClientName(input);
     };
 
     
-    useEffect(() => {
-      console.log(`changedd  ${num++} `)
-      updateItemsAndTotal();
-    }, [items]);
     
-    const updateItemsAndTotal = () => {
+  
+    // Memoize the function to prevent re-creation
+    const updateItemsAndTotal = useCallback(() => {
       const updatedItems = items.map(item => {
-        const perCarat = ((((item.comm || 0) + (item.fare || 0)) + ((item.price || 0)) * (item.quantity || 0)));
-        const eachItemTotal = (item.carat || 0) * ((((item.comm || 0) + (item.fare || 0)) + ((item.price || 0)) * (item.quantity || 0)));
+        const perCarat = 
+          ((item.comm || 0) + (item.fare || 0)) + ((item.price || 0) * (item.quantity || 0));
+        const eachItemTotal = 
+          (item.carat || 0) * perCarat;
         return { ...item, eachItemTotal, perCarat };
       });
-    
+  
       const billTotal = updatedItems.reduce((total, item) => total + item.eachItemTotal, 0);
-    
+  
       // Only update if items have actually changed
       const hasChanged = JSON.stringify(items) !== JSON.stringify(updatedItems);
       if (hasChanged) {
         setItems(updatedItems);
       }
-    
+  
       setBillTotal(billTotal); // Update billTotal regardless
-    };
+    }, [items]);
+    
+    useEffect(() => {
+      console.log([items]);
+      updateItemsAndTotal();
+    }, [items , updateItemsAndTotal]);
     
     
     
@@ -114,21 +108,31 @@ import InvoicePage from "../components/DwnBtn";
       
       
 
-      const senData = async (): Promise<void> => {
-        setLoading(true);
+      const sendData = async (): Promise<void> => {
         try {
           const response = await axios.post("/api/invoices/add", invoiceDetail);
           console.log(response.data); // Log response
           alert("Invoice created successfully!");
-        } catch (error: any) {
-          console.error("Error creating invoice:", error.response?.data || error.message);
-          alert("Failed to create invoice.");
+        } catch (error: unknown) {
+          if (axios.isAxiosError(error)) {
+            // For Axios errors
+            console.error("Error creating invoice:", error.response?.data || error.message);
+            alert("Failed to create invoice. " + (error.response?.data || error.message));
+          } else if (error instanceof Error) {
+            // For general errors
+            console.error("Error creating invoice:", error.message);
+            alert("Failed to create invoice. " + error.message);
+          } else {
+            console.error("Unexpected error:", error);
+            alert("An unexpected error occurred.");
+          }
         } finally {
-          setLoading(false);
+          // Optional: Cleanup or final steps
         }
       };
+      
 
-    senData();
+    sendData();
     console.log("Invoice Created:", invoiceDetail);
     };
 
@@ -143,7 +147,11 @@ import InvoicePage from "../components/DwnBtn";
 
     const updateItem1 = (index: number, field: keyof Item, value: string | number) => {
       const updatedItems = [...items];
-      updatedItems[index][field] = value;
+      if (field === 'description' && typeof value === 'string') {
+        updatedItems[index][field] = value;}
+        else if(field !== 'description' && typeof value === 'number' ){
+          updatedItems[index][field] = value;
+        }
       setItems(updatedItems);
     };
 
@@ -248,20 +256,7 @@ import InvoicePage from "../components/DwnBtn";
                   autoComplete="off"
                 />
 
-                {suggestions && (
-                  <ul className="border mt-1 rounded bg-white absolute z-10 max-h-56 overflow-y-auto">
-                    {suggestions.map((client, index) => (
-                      <li
-                        key={index}
-                        // onClick={() => handleSuggestionClick(client)}
-                        className="p-2 cursor-pointer hover:bg-gray-200"
-                      >
-                        {/* {client.name}  */}
-                        {/* Render client name */}
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                
               </div>
               <div className="h-full flex items-center content-center ">
                 <input

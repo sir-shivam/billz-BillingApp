@@ -30,7 +30,7 @@ export interface InvoiceDocument extends Document, Invoice {}
 
 // Define the Mongoose schema for the Invoice model
 const InvoiceSchema = new Schema<InvoiceDocument>({
-  billNo: { type: Number, required: true, unique: true },
+  billNo: { type: Number, required: true,},
   clientName: { type: String, required: true },
   invoiceDate: { type: Date, required: true },
   balance: { type: Number, default: 0 },

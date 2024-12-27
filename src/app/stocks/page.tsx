@@ -1,40 +1,57 @@
 'use client'
 
+
 import { useState } from 'react'
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 
-// Mock data for stock items
-const initialStockItems = [
+// Define the StockItem interface
+interface StockItem {
+  id: number
+  name: string
+  quantity: number
+  price: number
+}
+
+const initialStockItems: StockItem[] = [
   { id: 1, name: 'Product A', quantity: 100, price: 10 },
   { id: 2, name: 'Product B', quantity: 50, price: 20 },
   { id: 3, name: 'Product C', quantity: 75, price: 15 },
-  // Add more mock stock items here...
 ]
 
 export default function StockManagement() {
-  const [stockItems, setStockItems] = useState(initialStockItems)
+  const [stockItems, setStockItems] = useState<StockItem[]>(initialStockItems)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingItem, setEditingItem] = useState(null)
+  const [editingItem, setEditingItem] = useState<StockItem | null>(null)
 
-  const handleAddStock = (newItem) => {
+  const handleAddStock = (newItem: Omit<StockItem, 'id'>) => {
     setStockItems([...stockItems, { id: stockItems.length + 1, ...newItem }])
     setIsModalOpen(false)
   }
 
-  const handleEditStock = (item) => {
+  const handleEditStock = (item: StockItem) => {
     setEditingItem(item)
     setIsModalOpen(true)
   }
 
-  const handleUpdateStock = (updatedItem) => {
-    setStockItems(stockItems.map(item => item.id === updatedItem.id ? updatedItem : item))
+  const handleUpdateStock = (updatedItem: StockItem) => {
+    setStockItems(
+      stockItems.map((item) => (item.id === updatedItem.id ? updatedItem : item))
+    )
     setIsModalOpen(false)
     setEditingItem(null)
   }
 
-  const handleDeleteStock = (id) => {
-    setStockItems(stockItems.filter(item => item.id !== id))
+  const handleDeleteStock = (id: number) => {
+    setStockItems(stockItems.filter((item) => item.id !== id))
   }
+
+  type StockItem = {
+    id: number
+    name: string
+    quantity: number
+    price: number
+  }
+  
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -129,14 +146,26 @@ export default function StockManagement() {
                 <button
                   type="button"
                   onClick={() => {
-                    const form = document.querySelector('form')
+                    const form = document.querySelector('form') as HTMLFormElement
+                    if (!form) return // Ensure the form exists
                     const formData = new FormData(form)
-                    const newItem = {
-                      name: formData.get('itemName'),
-                      quantity: parseInt(formData.get('quantity')),
-                      price: parseFloat(formData.get('price'))
+                  
+                    const name = formData.get('itemName') as string | null
+                    const quantity = formData.get('quantity') as string | null
+                    const price = formData.get('price') as string | null
+                  
+                    if (!name || !quantity || !price) {
+                      alert('Please fill in all fields.')
+                      return
                     }
-                    if (editingItem){
+                  
+                    const newItem: Omit<StockItem, 'id'> = {
+                      name,
+                      quantity: parseInt(quantity, 10),
+                      price: parseFloat(price),
+                    }
+                  
+                    if (editingItem) {
                       handleUpdateStock({ ...editingItem, ...newItem })
                     } else {
                       handleAddStock(newItem)
