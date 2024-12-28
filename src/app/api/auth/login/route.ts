@@ -34,32 +34,38 @@ export async function POST(req: NextRequest) {
       const hasBusiness = businesses.length > 0;
   
       // Create a JWT token with the user ID, role, and business IDs (if any)
-      const token = await jwt.sign(
-        { 
-          userId: user._id, 
-          role: user.role, 
-          businesses: businesses.length === 1
-            ? [businesses[0]]  // If only one business, store just that business ID
-            : businesses,  // If multiple businesses, store all business IDs
-          hasBusiness,  // Add a flag to indicate whether the user has businesses
-        },
-        process.env.JWT_SECRET || "your-secret-key",  // Secret key
-        { expiresIn: "1d" }  // Expiry time
-      );
-  
+const token = await jwt.sign(
+  { 
+    userId: user._id, 
+    role: user.role, 
+    businesses: businesses.length === 1
+      ? [businesses[0]]  // If only one business, store just that business ID
+      : businesses,  // If multiple businesses, store all business IDs
+    hasBusiness,  // Add a flag to indicate whether the user has businesses
+  },
+  process.env.JWT_SECRET || "your-secret-key",  // Secret key
+  { expiresIn: "30d" }  // JWT expires in 1 day (token expiration)
+);
 
+// Create response with the token and other data
+const response = NextResponse.json({
+  message: "Login successful",
+  token,
+  success: true,
+  hasBusiness,
+});
 
-      const response = NextResponse.json({
-          message: "login successfull",
-          token,
-          success: true,
-          hasBusiness,
-      })
-      response.cookies.set("token", token, {
-          httpOnly: true,
-      })
-      
-      return response;
+// Set the token in the cookie with a 1-year expiration
+response.cookies.set("token", token, {
+  httpOnly: true, // Make sure the cookie can't be accessed via JavaScript
+  secure: process.env.NODE_ENV === 'production', // Only send cookie over HTTPS in production
+  maxAge: 30 * 24 * 60 * 60,
+  sameSite: 'strict', // Use the lowercase 'strict' for sameSite
+  path: '/', // Ensure the cookie is available on all paths
+});
+
+return response;
+
       
     } catch (error) {
       console.error("Error during login:", error);

@@ -3,10 +3,12 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { HomeIcon, CubeIcon, DocumentTextIcon, ClockIcon, CogIcon, UserCircleIcon } from '@heroicons/react/24/outline'
-
+import { HomeIcon, CubeIcon, DocumentTextIcon, ClockIcon, CogIcon, UserCircleIcon , PlusIcon} from '@heroicons/react/24/outline'
+  
 const navItems = [
   { name: 'New Bill', href: '/invoicing', icon: HomeIcon },
+  { name: 'Clients', href: '/clients', icon: PlusIcon },
+  { name: 'Stocks', href: '/stocks/new', icon: PlusIcon},
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'Stocks', href: '/stocks', icon: CubeIcon },
   { name: 'Invoices', href: '/invoices', icon: DocumentTextIcon },

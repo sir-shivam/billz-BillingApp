@@ -2,6 +2,8 @@ import { connectDB } from "@/dbConfig/dbConfig";// Replace with your MongoDB con
 import Invoice from "@/models/invoices";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import Business from "@/models/businessModel";
+import Client from "@/models/clientModel";
 
 
 connectDB();
@@ -45,6 +47,8 @@ export async function POST(req: NextRequest) {
       billNo,
       clientName,
       clientId,
+      selectedClientId,
+      selectedItemId,
       invoiceDate,
       balance,
       paid,
@@ -53,10 +57,11 @@ export async function POST(req: NextRequest) {
       total,
     } = reqBody;
 
-    console.log(reqBody , "hello");
+    console.log(selectedItemId , "hello");
+    console.log(billNo, invoiceDate, items, total, selectedClientId , "check")
 
     // Validate required fields
-    if (!billNo || !clientName || !invoiceDate || !items || !total) {
+    if (!billNo || !clientName || !invoiceDate || !items || !total || !selectedClientId ) {
       return NextResponse.json({ error: "Missing required fields" }, {status: 400});
     }
 
@@ -75,6 +80,26 @@ export async function POST(req: NextRequest) {
     });
 
     await newInvoice.save();
+
+    const updatedBusiness = await Business.findByIdAndUpdate(
+      businessId,
+      { $push: { invoices: newInvoice._id } }, // Push the new invoice ID into the invoices array
+      { new: true }
+     ) // Return the updated document
+
+     await Client.findByIdAndUpdate(
+      selectedClientId,
+      {
+        $set: {
+          prevBalance: (total+balance-paid) ,
+          lastPaidAmount: paid,
+        },
+        $push: { invoices: newInvoice._Id }, // Push the new invoice ID into the array
+      },
+       // Push the new invoice ID into the invoices array
+      { new: true }
+     )
+     console.log(updatedBusiness , "hello1");
 
     return NextResponse.json({
       message: "Invoice created successfully",

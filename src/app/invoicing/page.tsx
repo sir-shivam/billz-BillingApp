@@ -18,8 +18,26 @@ import InvoicePage from "../components/DwnBtn";
     description: string;
     amount: number;
   }
+  interface Client {
+    _id: string;
+    clientName: string;
+    prevBalance: number;
+  }
+
+  interface iFetch {
+    _id: string;
+    name: string;
+    price: number
+  }
+  
 
   export default function Home() {
+    
+    
+      const [clients, setClients] = useState<Client[]>([]);
+      const [itemFetched , setItemFetched]  = useState<iFetch[]>([]);
+      const [selectedItemId , setselectedItemID] = useState("");
+      const [selectedClientId , setSelectedClientId] = useState("")
     const [items, setItems] = useState<Item[]>([
       { description: "", comm: 0, fare: 0, quantity: 1, price: 0 , eachItemTotal: 0 , carat:0 , perCarat:0 },
     ]);
@@ -41,18 +59,39 @@ import InvoicePage from "../components/DwnBtn";
       setInvoiceDate(`${year}-${month}-${day}`);
     };
 
+
+useEffect(() => {
+  console.log(clients, "this");
+}, [clients]); // This will log when the clients state updates
+
+const fetchClients = async () => {
+  try {
+    const response = await axios.get("/api/clients/find", {
+      withCredentials: true, // Ensure the cookies are sent
+    });
+    console.log(response.data, "clients");
+    const newData = response.data.business.clients;
+    const ItemNew = response.data.business.stocks;
+    console.log(newData, "new");
+    
+    setClients(newData); // Update the state
+    setItemFetched(ItemNew);
+  } catch (error) {
+    console.error("Error fetching clients:", error);
+    
+  }
+};
+
+
     useEffect(()=>{
       getTodayDate();
+      fetchClients();
     },[])
 
     // const [dueDate, setDueDate] = useState(getTodayDate());
     
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const input = e.target.value;
-      setClientName(input);
-    };
-
+    
     
     
   
@@ -96,6 +135,8 @@ import InvoicePage from "../components/DwnBtn";
       billNo: number;
       clientName: string;
       invoiceDate: string;
+      selectedClientId: string;
+      selectedItemId: string;
       balance: number;
       paid: number;
       items: Item[];
@@ -107,6 +148,8 @@ import InvoicePage from "../components/DwnBtn";
     const invoiceDetail: InvoiceDetails = {
         billNo,
         clientName,
+        selectedClientId,
+        selectedItemId,
         invoiceDate,
         balance,
         paid,
@@ -125,7 +168,8 @@ import InvoicePage from "../components/DwnBtn";
         try {
           const response = await axios.post("/api/invoices/add", invoiceDetail);
           console.log(response.data); // Log response
-          alert("Invoice created successfully!");
+          showIn();
+          // alert("Invoice created successfully!");
         } catch (error: unknown) {
           if (axios.isAxiosError(error)) {
             // For Axios errors
@@ -200,6 +244,7 @@ import InvoicePage from "../components/DwnBtn";
       );
     };
 
+    console.log(selectedClientId , "id");
     const showIn = () =>{
       if(showInvoice){
         setShowInvoice(false)
@@ -254,17 +299,30 @@ import InvoicePage from "../components/DwnBtn";
                 >
                   Client Name
                 </label>
-                <input
+                
+                <select
                   id="clientName"
-                  type="text"
-                  placeholder="Enter client name"
+                  // placeholder="Enter client name"
                   value={clientName}
-                  // onFocus={handleInputFocus}
-                  // onBlur={handleInputBlur}
-                  onChange={handleInputChange}
                   className="w-full p-2 border rounded text-black"
-                  autoComplete="off"
-                />
+                  onChange={(e) => {
+                    const clientName1 = e.target.value;
+                    setClientName(clientName1);
+                    const selectedClient = clients.find((client) => client.clientName === clientName1);
+                    console.log(selectedClient, "select")
+                    setSelectedClientId(selectedClient?._id || ""); // Set the selected client's ID
+                    setBalance(selectedClient?.prevBalance || 0);
+                  }}
+                  >
+                  <option value="" disabled>
+                 -- Select a Client --
+             </option>
+              {clients.map((client) => (
+               <option key={client._id} value={client.clientName}>
+            {client.clientName}
+                </option>
+                  ))}
+                  </select>
 
                 
               </div>
@@ -297,7 +355,7 @@ import InvoicePage from "../components/DwnBtn";
                 key={index}
                 className="container1 pb-2 flex flex-wrap sm:flex-nowrap space-x-2 bg-gray-100 items-center mb-2 rounded-md px-1"
               >
-                {/* First three fields: Item, Quantity, and Price */}
+              
                 <div className="flex max-w-[36%] flex-col order-1  ">
                   <label htmlFor={`desc-${index}`} className="text-sm  text-gray-700">
                     Item <button
@@ -308,19 +366,30 @@ import InvoicePage from "../components/DwnBtn";
                   -
                 </button>
                   </label>
-                  <input
-                    id={`desc-${index}`}
-                    type="text"
-                    placeholder="Select Items"
-                    value={item.description}
-                    onChange={(e) =>
-                      updateItem1(index, "description", e.target.value)
-                    }
-                    // onFocus={() => handleInputFocus1(index)}
-                    // onBlur={handleInputBlur1}
-                    className="py-2 pl-2 border rounded text-black"
-                    autoComplete="off"
-                  />
+                  <select 
+                  id="itemName"
+                  value={item.description}
+                  className="w-full p-2 border rounded text-black"
+                  onChange={(e) => {
+                    const itemName = e.target.value;
+                    item.description = itemName;
+                    const selectedItem = itemFetched.find((item) => item.name === itemName);
+                    // console.log(selectedClient, "select")
+                    setselectedItemID(selectedItem?._id || ""); // Set the selected client's ID
+                    item.price = selectedItem?.price || 0
+                  }}
+                  >
+                    <option value="" disabled>
+                  - Select Item --
+             </option>
+              {itemFetched.map((item) => (
+               <option key={item._id} value={item.name}>
+            {item.name}
+                </option>
+                  ))}
+
+                  </select>
+                  
                 </div>
                 <div className="flex flex-col order-2 sm:order-4  basis-[10%] max-w-[15%] sm:max-w-[12%]">
                   <label htmlFor={`quantity-${index}`} className="text-sm text-gray-700">
@@ -462,7 +531,7 @@ import InvoicePage from "../components/DwnBtn";
               {extra.map((item, index) => (
                 <div
                 key={index}
-                className="container1 pb-2 flex flex-wrap sm:flex-nowrap space-x-2 bg-gray-100 items-center mb-2 rounded-md px-1"
+                className="container1 pb-2 flex flex-nowrap space-x-2 bg-gray-100 items-center mb-2 rounded-md px-1"
               >
                 {/* First three fields: Item, Quantity, and Price */}
                 <div className="flex  flex-col order-1 flex-1 ">

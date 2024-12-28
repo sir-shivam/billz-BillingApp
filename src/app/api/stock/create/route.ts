@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { connectDB } from "@/dbConfig/dbConfig"; // Replace with your MongoDB connection helper
 import Business from "@/models/businessModel";
-import Client from "@/models/clientModel";
+import Stock from "@/models/stocks"
 import { NextRequest, NextResponse } from "next/server";
 
 connectDB();
@@ -31,51 +31,45 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: error , }, { status: 401 });
         }
 
-        const businessId = decoded.businesses[0];
+        const businessId = decoded.businesses[0]
   
   try {
     const reqBody = await req.json();
     // Extract client data from the request body
-    const {  clientName, contact, email, prevBalance, lastPaidAmount } = reqBody;
+    const {  name, quantity, price } = reqBody;
 
     // Validate required fields
-    if (!businessId || !clientName || !contact  || !prevBalance || !lastPaidAmount) {
+    if (!name || ! price) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Check if the business exists
-    const business = await Business.findById(businessId);
-    if (!business) {
-      return NextResponse.json({ error: "Business not found" }, { status: 404 });
-    }
+    // Check if the business exi
 
     // Create and save the client
-    const newClient = new Client({
-      clientName,
-      contact,
-      email,
-      prevBalance,
-      lastPaidAmount,
+    const newStock = new Stock({
+      name,
+      quantity,
+      price,
       byBusiness: businessId, // Link the client to the business
     });
 
-    await newClient.save();
+    await newStock.save();
 
     // Add the client to the business document's 'clients' array
-    await Business.findByIdAndUpdate(
+     await Business.findByIdAndUpdate(
       businessId,
-      { $push: { clients: newClient._id } }, // Push the new invoice ID into the invoices array
+      { $push: { stocks: newStock._id } }, // Push the new invoice ID into the invoices array
       { new: true }
      ) // Return the updated document
-     
+
 
     return NextResponse.json({
-      message: "Client created successfully",
+      message: "Stock created successfully",
       // client: newClient,
     });
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error("Error creating client:", error.message);
+      console.error("Error creating stock:", error.message);
       return NextResponse.json({ message: "Internal Server Error", error: error.message }, { status: 500 });
     } else {
       console.error("Unknown error occurred");

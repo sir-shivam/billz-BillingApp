@@ -3,6 +3,8 @@ import { connectDB } from "@/dbConfig/dbConfig";
 import Business from "@/models/businessModel";
 import User from "@/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
+import Client from "@/models/clientModel";
+import Stock from "@/models/stocks";
 
 connectDB();
 interface JwtPayloadWithUserId {
@@ -50,17 +52,64 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+
     // Check if the owner exists
     const owner = await User.findById(userId);
     if (!owner) {
       return NextResponse.json({ error: "Owner not found" }, { status: 404 });
     }
 
+    // create sample stock and client
+
+    const newClient = new Client({
+      clientName : "Sample Client",
+      contact:123456789,
+      email:"abc@abc.com",
+      prevBalance:100,
+      lastPaidAmount:0,
+    });
+
+    await newClient.save();
+
+    const newStock = new Stock({
+      name: "Sample Item",
+      quantity: 100,
+      price: 100,
+    });
+    let sampleclient = await Client.findOne({clientName : "Sample Client"})
+    let  sampleStock = await Stock.findOne({name: "Sample Item" })
+
+    if(!sampleclient){
+      sampleclient = new Client({
+        clientName : "Sample Client",
+        contact:123456789,
+        email:"abc@abc.com",
+        prevBalance:100,
+        lastPaidAmount:0,
+      });
+  
+      await sampleclient.save();
+    }
+
+    if(!sampleStock){
+      sampleStock = new Stock({
+        name: "Sample Item",
+        quantity: 100,
+        price: 100,
+      });
+    await sampleStock.save();
+    }
+
+    console.log(newStock , "stocks item");
+
+
     // Create and save the business
     const newBusiness = new Business({
       name,
       ownerId: userId,
       address,
+      clients: [sampleclient._id],
+      stocks: [sampleStock._id],
     });
 
     await newBusiness.save();
