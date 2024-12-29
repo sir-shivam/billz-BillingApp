@@ -1,6 +1,10 @@
 import jwt from "jsonwebtoken";
 import { connectDB } from "@/dbConfig/dbConfig"; // Replace with your MongoDB connection helper
 import Business from "@/models/businessModel";
+import Client from "@/models/clientModel";
+import Stock from "@/models/stocks"
+
+
 import { NextRequest, NextResponse } from "next/server";
 
 connectDB();
@@ -13,6 +17,8 @@ interface JwtPayloadWithUserId {
   iat?: number;
   exp?: number;
 }
+void Stock;
+void Client;
 
 export async function GET(req: NextRequest) {
   const retToken = req.cookies.get('token')?.value || '';

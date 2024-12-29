@@ -9,6 +9,7 @@ export async function connectDB() {
         
         connection.on('connected' , ()=> {
             console.log("Mongo db connected successfully")
+            console.log('Registered models:', mongoose.connection.modelNames());
         })
 
         connection.on('error', ()=> {

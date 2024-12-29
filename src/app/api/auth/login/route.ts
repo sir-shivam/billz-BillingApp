@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
   
       // Get the associated businesses' IDs
       const businesses = user.associatedBusinesses;
+      console.log(businesses , "have");
   
       // Check if the user has businesses associated
       const hasBusiness = businesses.length > 0;
@@ -38,9 +39,9 @@ const token = await jwt.sign(
   { 
     userId: user._id, 
     role: user.role, 
-    businesses: businesses.length === 1
+    businesses: hasBusiness 
       ? [businesses[0]]  // If only one business, store just that business ID
-      : businesses,  // If multiple businesses, store all business IDs
+      : [],  // If multiple businesses, store all business IDs
     hasBusiness,  // Add a flag to indicate whether the user has businesses
   },
   process.env.JWT_SECRET || "your-secret-key",  // Secret key
