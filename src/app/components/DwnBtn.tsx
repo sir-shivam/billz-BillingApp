@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { toPng } from "html-to-image";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -31,13 +31,14 @@ interface InvoicePageProps {
       notes: string;
       total: number;
   };
-  butFun: () => void;  // Define the type of the button function
+  butFun: () => void;  // Define the type of the button function,
+  download: boolean;
 }
 
-const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceDetail, butFun }) => {
+const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceDetail, butFun , download }) => {
   const invoiceRef = useRef<HTMLDivElement>(null);
 
- 
+ console.log(download, "download")
 
   const handleDownloadJPG = async () => {
     if (invoiceRef.current) {
@@ -48,8 +49,14 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceDetail, butFun }) => {
       link.click();
     }
   };
-
-// import jsPDF from "jspdf";
+  
+  useEffect(()=>{
+    if(invoiceRef.current && download){
+      handleDownloadJPG();
+    }
+  }, [invoiceRef.current]);
+  
+  // import jsPDF from "jspdf";
 
 const handleDownloadPDF = async () => {
   if (invoiceRef.current) {
@@ -64,6 +71,7 @@ const handleDownloadPDF = async () => {
     pdf.save("invoice.pdf");
   }
 };
+
 
 
   return (
@@ -130,7 +138,7 @@ const handleDownloadPDF = async () => {
           {
             invoiceDetail.extra.map((item, index) =>(
               <tr key={index} >
-              <td className="border border-gray-300 px-2 py-3 text-center  " colSpan={4}>{item.description}</td>
+              <td className="border border-gray-300 px-2 py-3 font-semibold pl-6  " colSpan={4}>{item.description}</td>
              
               <td className="border border-gray-300 px-2 py-3 text-center"></td>
               <td className="border border-gray-300 px-2 py-3 font-bold text-center">{item.amount}</td>
@@ -155,7 +163,7 @@ const handleDownloadPDF = async () => {
       <p>
         <span className="font-bold">Paid:</span> ₹{invoiceDetail.paid}
       </p>
-      <p>
+      <p className="font-bold text-lg text-orange-800">
         <span className="font-bold text-xl">Bill Balance:</span> ₹{invoiceDetail.total + invoiceDetail.balance - invoiceDetail.paid}
       </p>
       

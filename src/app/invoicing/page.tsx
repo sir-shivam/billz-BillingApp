@@ -39,9 +39,9 @@ import InvoicePage from "../components/DwnBtn";
       const [selectedItemId , setselectedItemID] = useState("");
       const [selectedClientId , setSelectedClientId] = useState("")
     const [items, setItems] = useState<Item[]>([
-      { description: "", comm: 0, fare: 0, quantity: 1, price: 0 , eachItemTotal: 0 , carat:0 , perCarat:0 },
+      { description: "", comm: 0, fare: 0, quantity: 1, price: 0 , eachItemTotal: 0 , carat:1 , perCarat:0 },
     ]);
-    const [extra , setExtra] = useState<Extra[]>([{description: "" , amount:0}]);
+    const [extra , setExtra] = useState<Extra[]>([]);
     const [clientName, setClientName] = useState<string>("");
     const [notes, setNotes] = useState<string>("");
     const [billNo, setBillNo] = useState<number>(1);
@@ -50,6 +50,7 @@ import InvoicePage from "../components/DwnBtn";
     const [billTotal , setBillTotal] = useState<number>(0);
     const [invoiceDate, setInvoiceDate] = useState("");
     const [showInvoice , setShowInvoice] = useState(false);
+    const [download, setDownload] = useState<boolean>(false);
     const [balance, setBalance] = useState<number>(0); // Client balance
     const getTodayDate = () => {
       const today = new Date();
@@ -58,7 +59,6 @@ import InvoicePage from "../components/DwnBtn";
       const day = String(today.getDate()).padStart(2, "0"); // Ensure 2 digits
       setInvoiceDate(`${year}-${month}-${day}`);
     };
-
 
 useEffect(() => {
   console.log(clients, "this");
@@ -168,6 +168,7 @@ const fetchClients = async () => {
         try {
           const response = await axios.post("/api/invoices/add", invoiceDetail);
           console.log(response.data); // Log response
+          setDownload(true);
           showIn();
           // alert("Invoice created successfully!");
         } catch (error: unknown) {
@@ -247,6 +248,7 @@ const fetchClients = async () => {
     console.log(selectedClientId , "id");
     const showIn = () =>{
       if(showInvoice){
+        setDownload(false);
         setShowInvoice(false)
       }
       else{
@@ -262,7 +264,7 @@ const fetchClients = async () => {
 
         {/* {loadin/>} Show loader while loading */}
         <div className="w-full sm:mx-auto sm:px-4 sm:py-8 sm:bg-gradient-to-br sm:from-white sm:via-gray-50 sm:to-gray-100 sm:bg-opacity-60 sm:backdrop-blur-md sm:rounded-lg sm:border sm:border-gray-400 sm:border-opacity-30 sm:shadow-lg ">
-        {showInvoice && <InvoicePage invoiceDetail={invoiceDetail} butFun={showIn}  />}
+        {showInvoice && <InvoicePage invoiceDetail={invoiceDetail} butFun={showIn} download={download}  />}
 
           <h1 className="text-3xl font-bold mb-6 sm:text-black">Create Invoice</h1>
           <form className="space-y-6" onSubmit={handleSubmit}>
