@@ -41,9 +41,9 @@ interface Extra {
         const { invoiceId } = params;
 
         // Fetch data server-side (Only once per request)
-        let invoice = null;
+        let invoice = null; https://billz-billing-app.vercel.app/show/6770387394a311b22a935fe0
         try {
-            const url = `http://localhost:3000/api/invoices/find?invoiceId=${encodeURIComponent(invoiceId)}`
+            const url = `https://billz-billing-app.vercel.app/api/invoices/find?invoiceId=${encodeURIComponent(invoiceId)}`
             console.log(url, "this")
             const response = await fetch(url, {
                 cache: 'no-store', // Disable caching, ensures fresh fetch every time
