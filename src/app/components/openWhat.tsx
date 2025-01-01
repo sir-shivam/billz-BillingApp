@@ -5,7 +5,7 @@ interface OpenWhatsAppProps {
   message: string; // Message to be pre-filled in WhatsApp
 }
 
-const OpenWhatsApp: React.FC<OpenWhatsAppProps> = ({ phoneNumber, message }) => {
+const OpenWhatsApp: React.FC<OpenWhatsAppProps> = ({ phoneNumber, message , }) => {
   const handleOpenWhatsApp = () => {
     const encodedMessage = encodeURIComponent(message);
     const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
@@ -14,8 +14,7 @@ const OpenWhatsApp: React.FC<OpenWhatsAppProps> = ({ phoneNumber, message }) => 
 
   return (
     <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <h1>Send Message via WhatsApp</h1>
-      <p>Click the button below to send a WhatsApp message:</p>
+        
       <button
         onClick={handleOpenWhatsApp}
         style={{
