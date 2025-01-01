@@ -41,7 +41,7 @@ interface Extra {
         const { invoiceId } = params;
 
         // Fetch data server-side (Only once per request)
-        let invoice = null; https://billz-billing-app.vercel.app/show/6770387394a311b22a935fe0
+        let invoice = null; 
         try {
             const url = `https://billz-billing-app.vercel.app/api/invoices/find?invoiceId=${encodeURIComponent(invoiceId)}`
             console.log(url, "this")
