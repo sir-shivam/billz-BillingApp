@@ -23,10 +23,17 @@ export interface Invoice {
   balance: number;
   paid: number;
   items: Item[];
+  extra: Extra[];
   notes: string;
   CommFare: number;
   total: number;
+  cloudinaryUrl: string,
 
+
+}
+interface Extra {
+  description: string;
+  amount: number;
 }
 
 // Create a Mongoose Document type that extends the Invoice interface
@@ -54,9 +61,14 @@ const InvoiceSchema = new Schema<InvoiceDocument>(
         eachItemTotal: { type: Number, required: true },
       },
     ],
+    extra: [{
+      description: {type: String},
+      amount: {type: Number}
+    }],
     notes: { type: String, default: "" },
     CommFare: { type: Number, default: 0 },
     total: { type: Number, required: true },
+    cloudinaryUrl: { type: String, default: "" },
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );
@@ -77,9 +89,11 @@ InvoiceSchema.pre("save", async function (next) {
         balance: this.balance,
         paid: this.paid,
         items: this.items,
+        extra : this.extra,
         notes: this.notes,
         CommFare: this.CommFare,
         total: this.total,
+        cloudinaryUrl: this.cloudinaryUrl,
         updatedAt: new Date(),
       });
 

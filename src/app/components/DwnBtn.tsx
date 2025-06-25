@@ -1,7 +1,10 @@
+
+
 import React, { useEffect, useRef } from "react";
-import { toPng } from "html-to-image";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { toJpeg } from 'html-to-image';
+// import { renderToString } from "react-dom/server";
 
 
 interface Item {
@@ -33,28 +36,48 @@ interface InvoicePageProps {
   };
   butFun: () => void;  // Define the type of the button function,
   download: boolean;
+  invoiceId: string;
 }
 
-const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceDetail, butFun , download }) => {
+const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceDetail, butFun , download , invoiceId}) => {
   const invoiceRef = useRef<HTMLDivElement>(null);
 
+  console.log(invoiceId , "this is id ");
  console.log(download, "download")
 
   const handleDownloadJPG = async () => {
-    if (invoiceRef.current) {
-      const dataUrl = await toPng(invoiceRef.current);
-      const link = document.createElement("a");
-      link.href = dataUrl;
-      link.download = `invoice_${invoiceDetail.clientName}.jpg`;
-      link.click();
+  if (invoiceRef.current) {
+    try {
+      const dataUrl = await toJpeg(invoiceRef.current, {
+  quality: 0.8, // 0.0 (lowest) to 1.0 (best) — tweak this as needed
+});
+      const blob = await (await fetch(dataUrl)).blob();
+
+      const formData = new FormData();
+      formData.append('file', blob);
+      formData.append('fileName', `invoice_${invoiceId}.png`);
+      formData.append('invoiceId', invoiceId);
+
+      const res = await fetch('/api/upload-invoice-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await res.json();
+      console.log("✅ Cloudinary URL:", result.url);
+    } catch (error) {
+      console.error("❌ Error generating/uploading invoice:", error);
     }
-  };
+  }
+};
+
+
   
   useEffect(()=>{
     if(invoiceRef.current && download){
       handleDownloadJPG();
     }
-  }, [invoiceRef.current]);
+  }, [invoiceRef.current , download]);
   
   // import jsPDF from "jspdf";
 

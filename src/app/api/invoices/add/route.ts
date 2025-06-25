@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
       balance,
       paid,
       items,
+      extra,
       notes,
       total,
     } = reqBody;
@@ -75,6 +76,7 @@ export async function POST(req: NextRequest) {
       balance,
       paid,
       items,
+      extra,
       notes,
       total,
     });

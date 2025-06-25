@@ -1,6 +1,6 @@
 
 "use client"
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { toPng } from "html-to-image";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -53,11 +53,7 @@ const InvoicePage1: React.FC<InvoicePageProps> = ({ invoiceDetail, download }) =
     }
   };
   
-  useEffect(()=>{
-    if(invoiceRef.current && download){
-      handleDownloadJPG();
-    }
-  }, [invoiceRef.current]);
+  
   
   // import jsPDF from "jspdf";
 

@@ -1,15 +1,20 @@
-// app/user-profile/[invoiceId]/page.tsx
-
-import InvoicePage from '@/app/components/DwnBtn';
+// src/app/show/[invoiceId]/page.tsx
+import { Metadata } from 'next';
 import InvoicePage1 from '@/app/components/serverButt';
 import React from 'react';
 
-interface ApiResponse {
-    message: string;
-    invoice: invoiceDetail;
+// Define the structure for the route parameters
+interface Params {
+    invoiceId: string;
 }
 
-interface invoiceDetail {
+// Define the API response structure
+interface ApiResponse {
+    message: string;
+    invoice: InvoiceDetail;
+}
+
+interface InvoiceDetail {
     billNo: number;
     clientName: string;
     invoiceDate: string;
@@ -37,42 +42,55 @@ interface Extra {
     amount: number;
 }
 
-    const UserProfilePage = async ({ params }: { params: { invoiceId: string } }) => {
-        const { invoiceId } = params;
+// Generate metadata for SEO
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+    const { invoiceId } = params;
+    return {
+        title: `Invoice view`,
+        description: `View details for invoice ID ${invoiceId}.`,
+    };
+}
 
-        // Fetch data server-side (Only once per request)
-        let invoice = null; 
-        try {
-            const url = `https://billz-billing-app.vercel.app/api/invoices/find?invoiceId=${encodeURIComponent(invoiceId)}`
-            console.log(url, "this")
-            const response = await fetch(url, {
-                cache: 'no-store', // Disable caching, ensures fresh fetch every time
-            });
+// Fetch the invoice data
+async function fetchInvoiceData(invoiceId: string): Promise<InvoiceDetail | null> {
+    try {
+        // const url = `https://billz-billing-app.vercel.app/api/invoices/find?invoiceId=${encodeURIComponent(invoiceId)}`;
+        const url = `http://localhost:3000/api/invoices/find?invoiceId=${encodeURIComponent(invoiceId)}`; 
+        const response = await fetch(url, { cache: 'no-store' });
 
+        if (response.ok) {
             const data: ApiResponse = await response.json();
-
-            if (response.ok) {
-                invoice = data.invoice;
-            }
-        } catch (error) {
-            console.error('Error fetching invoice data:', error);
+            return data.invoice;
         }
+    } catch (error) {
+        console.error('Error fetching invoice data:', error);
+    }
+    return null;
+}
 
-        if (!invoice) {
-            // Handle case where invoice is not found or there's an error
-            return <div>Invoice not found</div>;
-        }
+// Page component
+const UserProfilePage = async ({ params }: { params: Params }) => {
+    const { invoiceId } = params;
+
+    // Fetch the invoice data
+    const invoice = await fetchInvoiceData(invoiceId);
+
+    if (!invoice) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen py-2">
+                <h1>Invoice Not Found</h1>
+                <p>The requested invoice could not be found. Please check the ID and try again.</p>
+            </div>
+        );
+    }
 
     return (
-        <div className='flex flex-col items-center justify-center min-h-screen py-2'>
-            <h1>Profile</h1>
-            <hr />
-            <p className='text-4xl'>
-                Profile Page
-                <span className='p-2 rounded bg-green-500 text-black'>{invoiceId}</span>
+        <div className="flex flex-col items-center justify-center min-h-screen py-2">
+            <h1>Invoice Details</h1>
+            <p className="text-lg">
+                Viewing details for invoice ID: <strong>{invoiceId}</strong>
             </p>
-
-            <InvoicePage1 invoiceDetail={invoice}  download={false} />
+            <InvoicePage1 invoiceDetail={invoice} download={false} />
         </div>
     );
 };
