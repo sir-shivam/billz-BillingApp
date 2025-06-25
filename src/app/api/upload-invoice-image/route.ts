@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Invoice from "@/models/invoices";
 import { v2 as cloudinary } from 'cloudinary';
 
-// @ts-ignore
+//@ts-expect-error
 import streamifier from 'streamifier';
 
 cloudinary.config({
