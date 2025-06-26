@@ -1,15 +1,23 @@
 // /app/invoices/[id]/page.tsx
 
 "use client";
+import { FC } from "react";
 
+// interface PageProps {
+//   params: {
+//     id: string;
+//   };
+// }
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import InvoicePage from "@/app/components/DwnBtn"; // Adjust the path if needed
 import axios from "axios";
 
-const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
-  const { id } = params;
+export default function InvoiceDetailPage() {
   const router = useRouter();
+  const params = useParams();
+  const id = params?.id as string;
+  // const router = useRouter();
 
   const [invoiceDetail, setInvoiceDetail] = useState<any | null>(null);
   const [userBusinessId, setUserBusinessId] = useState<string | null>(null);
@@ -82,4 +90,4 @@ setInvoiceDetail(invoice);
   );
 };
 
-export default InvoiceDetailPage;
+

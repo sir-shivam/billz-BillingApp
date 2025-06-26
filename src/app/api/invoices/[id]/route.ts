@@ -6,12 +6,11 @@ import Invoice from '@/models/invoices';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
 ) {
   try {
     await connectDB();
-
-    const invoiceId = params.id;
+    const url = new URL(request.url);
+    const invoiceId = url.pathname.split("/").pop();
 
     if (!invoiceId) {
       return NextResponse.json(
