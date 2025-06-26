@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
   const changes = entry?.changes?.[0];
   const message = changes?.value?.messages?.[0];
   console.log(message , "message");
+  const msgText = message?.text?.body?.trim().toLowerCase();
 
   if (!message) return NextResponse.json({ success: true });
 
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
   let phone = from;
   if (phone.startsWith("91") && phone.length === 12) {
   phone = phone.slice(2); // becomes '9876543210'
-}
+  }
   const name = message?.profile?.name || "User";
 
   if (message?.type === "interactive" && message?.interactive?.type === "button_reply") {
@@ -87,9 +88,15 @@ export async function POST(req: NextRequest) {
   return new Response("OK");
 }
 
+  if(msgText === "hi i am shivam"){
+    await sendTextMessage(from, "👋 Hi to Myself - I am Shivam");
+    
+    return NextResponse.json({ status: "done" });
+  }
 
 
-  await sendTextMessage(from, "👋 Welcome to Billz - A webApp made by *Shivam Krishnaohan Gupta*");
+
+  await sendTextMessage(from, "👋 Welcome to Billz - A WebApp made by *Shivam Krishnaohan Gupta*");
 
   const client = await Client.findOne({ contact : phone });
   console.log(phone , "this is my phone");

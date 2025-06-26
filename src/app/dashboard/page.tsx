@@ -225,7 +225,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
+      <div className="h-svh flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
@@ -236,7 +236,7 @@ export default function Dashboard() {
 
   if (!business) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
+      <div className="h-svh flex items-center justify-center bg-gray-50">
         <div className="text-center bg-white p-8 rounded-lg shadow-lg max-w-md mx-4">
           <div className="mb-6">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -259,7 +259,7 @@ export default function Dashboard() {
   }
 
   const renderOverview = () => (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div className="grid  grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between">
           <div>
@@ -457,9 +457,9 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col">
+    <div className="h-[96vh] rounded-lg bg-gray-50 flex flex-col">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-white rounded-t-lg shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-6">
             <div className="flex items-center justify-between">
@@ -474,15 +474,17 @@ export default function Dashboard() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
-                <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                  Settings
+              <div className="flex items-center space-x-4 ">
+                <button 
+                onClick={() => router.push('/invoicing')}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                  🧾Create Bill
                 </button>
                 <button 
-                  onClick={() => router.push('/logout')}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                  onClick={() => router.push('/')}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-400 transition-colors"
                 >
-                  Logout
+                  🏠Home
                 </button>
               </div>
             </div>

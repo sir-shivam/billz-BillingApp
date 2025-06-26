@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface FormData {
@@ -9,6 +10,7 @@ interface FormData {
 }
 
 export default function CreateClient() {
+  const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
     clientName: "",
     contact: "",
@@ -65,12 +67,34 @@ export default function CreateClient() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 text-black">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-black">
+      <div className="h-full   rounded  justify-around flex w-full mb-2  ">  
+            <button 
+                onClick={() => router.push('/invoicing')}
+                className="px-4 py-2 h-full  text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:text-purple-800 hover:bg-green-300 transition-colors">
+                  Crete Bill ➕
+                </button>
+                <button 
+                onClick={() => router.push('/stocks/new')}
+                className="px-4 py-2 h-full  text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:text-purple-800 hover:bg-green-300 transition-colors">
+                  🍒 ➕
+                </button>
+
+                <button 
+                onClick={() => router.push('/dashboard')}
+                className="px-4 py-2 h-full  text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:text-purple-800 hover:bg-green-300 transition-colors">
+                  DashBoard
+                </button>
+
+              </div>
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+        
         <h1 className="text-2xl font-bold text-center mb-6">Create New Client</h1>
 
         {success && <p className="text-green-600 text-center mb-4">{success}</p>}
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
+        
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <InputField

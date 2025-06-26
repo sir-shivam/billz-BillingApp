@@ -1,6 +1,6 @@
 import "./globals.css";
 import { Inter } from 'next/font/google'
-import Navbar from './components/Navbar'
+// import Navbar from './components/Navbar'
 import { Suspense } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -27,9 +27,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className}  bg-gray-50`}>
-        <Navbar />
+        {/* <Navbar /> */}
         <Suspense fallback={<LoadingSpinner />}>
-          <main className="container mx-auto px-4 py-8 animate-fade-in">
+          <main className="container min-h-svh mx-auto px-1 sm:px-4 md:px-4 lg:px-4 py-4 animate-fade-in">
             {children}
           </main>
         </Suspense>

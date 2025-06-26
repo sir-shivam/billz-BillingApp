@@ -3,6 +3,7 @@
   import React, { useEffect,FormEvent, useState, useCallback } from "react";
   import axios from "axios";
 import InvoicePage from "../components/DwnBtn";
+import { useRouter } from "next/navigation";
   // import { letGet, letPost } from "./Utility/Server";
   interface Item {
     description: string;
@@ -33,7 +34,7 @@ import InvoicePage from "../components/DwnBtn";
 
   export default function Home() {
     
-    
+      const router = useRouter();
       const [clients, setClients] = useState<Client[]>([]);
       const [itemFetched , setItemFetched]  = useState<iFetch[]>([]);
       const [selectedItemId , setselectedItemID] = useState("");
@@ -266,11 +267,31 @@ const fetchClients = async () => {
       <div >
 
         {/* {loadin/>} Show loader while loading */}
-        <div className="w-full sm:mx-auto sm:px-4 sm:py-8 sm:bg-gradient-to-br sm:from-white sm:via-gray-50 sm:to-gray-100 sm:bg-opacity-60 sm:backdrop-blur-md sm:rounded-lg sm:border sm:border-gray-400 sm:border-opacity-30 sm:shadow-lg ">
+        <div className="w-full border py-3 rounded-lg px-2 bg-gray-50 sm:mx-auto sm:px-4 sm:py-8 sm:bg-gradient-to-br sm:from-white sm:via-gray-50 sm:to-gray-100 sm:bg-opacity-60 sm:backdrop-blur-md sm:rounded-lg sm:border sm:border-gray-400 sm:border-opacity-30 sm:shadow-lg ">
         {showInvoice && <InvoicePage invoiceDetail={invoiceDetail} butFun={showIn} download={download} invoiceId={invoiceId}  />}
+          <div className="flex justify-between" >
+          <h1 className="text-3xl font-bold mb-6  text-black">Create Invoice</h1>
+           <div className="h-full bg-gray-100 rounded  flex  ">  
+            <button 
+                onClick={() => router.push('/clients')}
+                className="px-4 py-2 h-full  text-sm font-medium text-gray-700 bg-white border border-gray-400 rounded-lg hover:text-purple-800 hover:bg-green-300 transition-colors">
+                  ᢥ  ➕
+                </button>
+                <button 
+                onClick={() => router.push('/stocks/new')}
+                className="px-4 py-2 h-full  text-sm font-medium text-gray-700 bg-white border border-gray-400 rounded-lg hover:text-purple-800 hover:bg-green-300 transition-colors">
+                  🍒 ➕
+                </button>
 
-          <h1 className="text-3xl font-bold mb-6 sm:text-black">Create Invoice</h1>
-          <form className="space-y-6" onSubmit={handleSubmit}>
+                <button 
+                onClick={() => router.push('/dashboard')}
+                className="px-4 py-2 h-full  text-sm font-medium text-gray-700 bg-white border border-gray-400 rounded-lg hover:text-purple-800 hover:bg-green-300 transition-colors">
+                  DashBoard
+                </button>
+
+              </div>
+          </div>
+          <form className="space-y-6  " onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
               <div>
                 <label htmlFor="status" className="block font-medium sm:text-black">
@@ -339,7 +360,7 @@ const fetchClients = async () => {
                   checked={fare} // Bind checked attribute to fare state
                   onChange={handleFareChange} // Update state on change
                 />
-                <label className="sm:text-black">Commission + Fare</label>
+                <label className="text-black">Commission + Fare</label>
               </div>
             </div>
             <div className="sm:text-black ">
@@ -520,7 +541,7 @@ const fetchClients = async () => {
             </div>
 
               {/* writing extra here  */}
-              <div className="sm:text-black ">
+              <div className="text-black ">
               <label className="font-medium flex  space-x-2   mt-2  ">
                 <span className="flex w p-2">Something Extra ? </span>
                 <button

@@ -1,8 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const AddStock = () => {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState(0);
   const [price, setPrice] = useState(0);
@@ -28,7 +30,26 @@ const AddStock = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4 text-black">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4 text-black">
+      <div className="h-full   rounded  justify-around flex w-full mb-2  ">  
+            <button 
+                onClick={() => router.push('/invoicing')}
+                className="px-4 py-2 h-full  text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:text-purple-800 hover:bg-green-300 transition-colors">
+                  Crete Bill ➕
+                </button>
+                <button 
+                onClick={() => router.push('/stocks/new')}
+                className="px-4 py-2 h-full  text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:text-purple-800 hover:bg-green-300 transition-colors">
+                  🍒 ➕
+                </button>
+
+                <button 
+                onClick={() => router.push('/dashboard')}
+                className="px-4 py-2 h-full  text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:text-purple-800 hover:bg-green-300 transition-colors">
+                  DashBoard
+                </button>
+
+              </div>
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
           Add Stock
