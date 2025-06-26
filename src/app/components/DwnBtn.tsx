@@ -1,4 +1,4 @@
-
+"use client"
 
 import React, { useEffect, useRef } from "react";
 import html2canvas from "html2canvas";
@@ -50,7 +50,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceDetail, butFun , downl
     try {
       const dataUrl = await toJpeg(invoiceRef.current, {
   quality: 0.8, // 0.0 (lowest) to 1.0 (best) — tweak this as needed
-});
+  });
       const blob = await (await fetch(dataUrl)).blob();
 
       const formData = new FormData();
@@ -200,14 +200,9 @@ const handleDownloadPDF = async () => {
       onClick={handleDownloadJPG}
       className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600"
     >
-      Download as JPG
+      Download
     </button>
-    <button
-      onClick={handleDownloadPDF}
-      className="bg-green-500 text-white px-4 py-2 rounded shadow hover:bg-green-600"
-    >
-      Download as PDF
-    </button>
+  
   </div>
 </div>
 </div>

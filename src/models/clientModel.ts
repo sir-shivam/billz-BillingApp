@@ -9,8 +9,7 @@ interface PaymentHistory {
 // Define the structure of the Client model
 export interface Client {
   clientName: string;
-  contact: string; // WhatsApp number or any other contact information
-  email: string;
+  contact: string; // WhatsApp number or any other contact informatio
   prevBalance: number; // Previous balance before any new transactions
   lastPaidAmount: number; // Last paid amount
   amountPaidHistory: PaymentHistory[]; // Array to store history of payments with dates
@@ -25,7 +24,6 @@ export interface ClientDocument extends Document, Client {}
 const ClientSchema = new Schema<ClientDocument>({
   clientName: { type: String, required: true },
   contact: { type: String, required: true }, // WhatsApp contact number or other
-  email: { type: String }, // Ensure email is unique
   prevBalance: { type: Number, default: 0 },
   lastPaidAmount: { type: Number, default: 0 },
   amountPaidHistory: [

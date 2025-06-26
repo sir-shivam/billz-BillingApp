@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function SignUp() {
   const [name, setName] = useState('')
@@ -12,6 +13,9 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const router = useRouter()
+
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -43,14 +47,11 @@ export default function SignUp() {
       const data = await res.json()
 
       if (res.ok) {
-        setSuccess('User registered successfully!')
-        setName('')
-        setEmail('')
-        setPassword('')
-        setConfirmPassword('')
-      } else {
-        setError(data.error || 'Something went wrong!')
-      }
+  // Set token (optional — already in cookie)
+  localStorage.setItem("token", data.token); // optional
+
+  router.push("/dashboard"); // redirect immediately after signup
+}
     } catch (err) {
       setError(`${err}`)
     } finally {

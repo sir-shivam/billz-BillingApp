@@ -7,6 +7,7 @@ export interface IBusiness extends Document {
     accountantIds: Schema.Types.ObjectId[];
     stocks: Schema.Types.ObjectId[];
     clients:  Schema.Types.ObjectId[];
+    contact: string;
     invoices: Schema.Types.ObjectId[];
   }
   
@@ -18,6 +19,7 @@ export interface IBusiness extends Document {
       accountantIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
       stocks:[{ type: Schema.Types.ObjectId, ref: 'Stock' }],
       clients: [{ type: Schema.Types.ObjectId, ref: 'Client' }],
+      contact: { type: String, required: true, unique: true },
       invoices: [{ type: Schema.Types.ObjectId, ref: 'Invoice' }],
     },
     { timestamps: true }

@@ -107,6 +107,7 @@ export async function POST(req: NextRequest) {
     const newBusiness = new Business({
       name,
       ownerId: userId,
+      contact: owner.contact,
       address,
       clients: [sampleclient._id],
       stocks: [sampleStock._id],

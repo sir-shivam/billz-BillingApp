@@ -1,57 +1,67 @@
+// /api/auth/signup/route.ts
+
 import { connectDB } from "@/dbConfig/dbConfig";
 import User from "@/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 connectDB();
 
 export async function POST(req: NextRequest) {
   try {
-    const reqBody = await req.json();
-    const { name, email, password, contact, role } = reqBody;
+    const { name, email, password, contact, role } = await req.json();
 
-    // Validate required fields
     if (!name || !email || !password || !contact) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Check if the user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return NextResponse.json({ error: "User already exists" }, { status: 400 });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create the user
     const newUser = new User({
       name,
       email,
       contact,
-      password: hashedPassword, // Hashed password
-      role: role || "owner", // Default role is "owner" if not provided
+      password: hashedPassword,
+      role: role || "owner",
     });
 
-    // Save the user to the database
     await newUser.save();
 
-    return NextResponse.json({
-      message: "User registered successfully",
-      user: {
-        name: newUser.name,
-        email: newUser.email,
-        contact: newUser.contact,
+    const token = await jwt.sign(
+      {
+        userId: newUser._id,
         role: newUser.role,
+        businesses: [],
+        hasBusiness: false,
       },
+      process.env.JWT_SECRET || "your-secret-key",
+      { expiresIn: "30d" }
+    );
+
+    const response = NextResponse.json({
+      message: "User registered successfully",
+      token,
+      success: true,
+      hasBusiness: false,
     });
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("Error registering user:", error.message);
-      return NextResponse.json({ message: "Internal Server Error", error: error.message }, { status: 500 });
-    } else {
-      console.error("Unknown error occurred");
-      return NextResponse.json({ message: "Internal Server Error", error: "Unknown error occurred" }, { status: 500 });
-    }
+
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 30 * 24 * 60 * 60,
+      sameSite: "strict",
+      path: "/",
+    });
+
+    return response;
+  } catch (error) {
+    console.error("Signup Error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

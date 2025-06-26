@@ -36,10 +36,10 @@ export async function POST(req: NextRequest) {
   try {
     const reqBody = await req.json();
     // Extract client data from the request body
-    const {  clientName, contact, email, prevBalance, lastPaidAmount } = reqBody;
+    const {  clientName, contact, prevBalance, lastPaidAmount } = reqBody;
 
     // Validate required fields
-    if (!businessId || !clientName || !contact  || !prevBalance || !lastPaidAmount) {
+    if (!businessId || !clientName || !contact ) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -53,7 +53,6 @@ export async function POST(req: NextRequest) {
     const newClient = new Client({
       clientName,
       contact,
-      email,
       prevBalance,
       lastPaidAmount,
       byBusiness: businessId, // Link the client to the business

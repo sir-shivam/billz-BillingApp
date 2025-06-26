@@ -1,37 +1,38 @@
-"use client"
+"use client";
 import { useState } from "react";
 
 interface FormData {
   clientName: string;
   contact: string;
-  email: string;
-  prevBalance: number;
-  lastPaidAmount: number;
+  prevBalance: any;
+  lastPaidAmount: any;
 }
 
 export default function CreateClient() {
   const [formData, setFormData] = useState<FormData>({
     clientName: "",
     contact: "",
-    email: "",
-    prevBalance: 0,
-    lastPaidAmount: 0,
+    prevBalance: "",
+    lastPaidAmount: "",
   });
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "prevBalance" || name === "lastPaidAmount" ? value : value, // Temporarily store as string
+      [name]: name === "prevBalance" || name === "lastPaidAmount" ? Number(value) : value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
+    setError("");
+    setSuccess("");
 
     try {
       const response = await fetch("/api/clients/create", {
@@ -45,20 +46,19 @@ export default function CreateClient() {
       const result = await response.json();
 
       if (response.ok) {
-        setMessage("Client created successfully!");
+        setSuccess("✅ Client created successfully!");
         setFormData({
           clientName: "",
           contact: "",
-          email: "",
           prevBalance: 0,
-          lastPaidAmount:0 ,
+          lastPaidAmount: 0,
         });
       } else {
-        setMessage(result.error || "Failed to create client");
+        setError(result.error || "❌ Failed to create client.");
       }
-    } catch (error) {
-      console.error("Error:", error);
-      setMessage("An error occurred while creating the client");
+    } catch (err) {
+      console.error("Error:", err);
+      setError("❌ An error occurred while creating the client.");
     } finally {
       setLoading(false);
     }
@@ -68,94 +68,119 @@ export default function CreateClient() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100 text-black">
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-center mb-6">Create New Client</h1>
+
+        {success && <p className="text-green-600 text-center mb-4">{success}</p>}
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="clientName" className="block text-sm font-medium text-gray-700">
-              Client Name
-            </label>
-            <input
-              type="text"
-              id="clientName"
-              name="clientName"
-              value={formData.clientName}
-              onChange={handleChange}
-              required
-              className="mt-1 p-2  block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            />
-          </div>
+          <InputField
+            label="Client Name"
+            name="clientName"
+            value={formData.clientName}
+            onChange={handleChange}
+            disabled={loading}
+          />
 
-          <div>
-            <label htmlFor="contact" className="block text-sm font-medium text-gray-700 ">
-              Contact
-            </label>
-            <input
-              type="text"
-              id="contact"
-              name="contact"
-              value={formData.contact}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            />
-          </div>
+          <InputField
+            label="Contact"
+            name="contact"
+            value={formData.contact}
+            onChange={handleChange}
+            disabled={loading}
+          />
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="mt-1 block p-2  w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            />
-          </div>
+          
 
-          <div>
-            <label htmlFor="prevBalance" className="block text-sm font-medium text-gray-700">
-              Previous Balance
-            </label>
-            <input
-              type="number"
-              id="prevBalance"
-              name="prevBalance"
-              value={formData.prevBalance}
-              onChange={handleChange}
-              className="mt-1 block p-2  w-full rounded-md border-gray-800 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            />
-          </div>
+          <InputField
+            label="Previous Balance"
+            name="prevBalance"
+            type="number"
+            value={formData.prevBalance}
+            onChange={handleChange}
+            disabled={loading}
+          />
 
-          <div>
-            <label htmlFor="lastPaidAmount" className="block text-sm font-medium text-gray-700">
-              Last Paid Amount
-            </label>
-            <input
-              type="number"
-              id="lastPaidAmount"
-              name="lastPaidAmount"
-              value={formData.lastPaidAmount}
-              onChange={handleChange}
-              className="mt-1 block p-2  w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            />
-          </div>
+          <InputField
+            label="Last Paid Amount"
+            name="lastPaidAmount"
+            type="number"
+            value={formData.lastPaidAmount}
+            onChange={handleChange}
+            disabled={loading}
+          />
 
           <button
             type="submit"
             disabled={loading}
-            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+            className={`w-full flex justify-center items-center py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white ${
               loading ? "bg-gray-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
             }`}
           >
-            {loading ? "Creating..." : "Create Client"}
+            {loading ? (
+              <span className="flex items-center space-x-2">
+                <svg
+                  className="animate-spin h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  ></path>
+                </svg>
+                <span>Creating...</span>
+              </span>
+            ) : (
+              "Create Client"
+            )}
           </button>
         </form>
-
-        {message && (
-          <p className="mt-4 text-center text-sm font-medium text-green-600">{message}</p>
-        )}
       </div>
+    </div>
+  );
+}
+
+// Reusable input component
+function InputField({
+  label,
+  name,
+  value,
+  onChange,
+  type = "text",
+  disabled = false,
+}: {
+  label: string;
+  name: string;
+  value: string | number;
+  type?: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div>
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+        {label}
+      </label>
+      <input
+        type={type}
+        id={name}
+        name={name}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        required
+        className="mt-1 block p-2 w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+      />
     </div>
   );
 }
