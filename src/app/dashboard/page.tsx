@@ -248,7 +248,7 @@ export default function Dashboard() {
             <p className="text-gray-600">You don't have a business registered yet. Let's get you started!</p>
           </div>
           <button
-            onClick={() => router.push('/register-business')}
+            onClick={() => router.push('/registerbizz')}
             className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
           >
             Register Your Business

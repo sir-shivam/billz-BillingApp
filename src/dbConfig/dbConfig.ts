@@ -1,5 +1,11 @@
 import mongoose from "mongoose";
-
+import "@/models/userModel";
+import "@/models/businessModel";
+import "@/models/clientModel";
+import "@/models/invoiceHistory";
+import "@/models/invoices";
+import "@/models/processedMessage";
+import "@/models/stocks";
 const MONGODB_URI = process.env.MONGO_URI!;
 let isConnected = false;
 
