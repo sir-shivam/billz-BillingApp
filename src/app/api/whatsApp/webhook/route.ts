@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import Client from '@/models/clientModel';
 import Invoice from '@/models/invoices';
+import ProcessedMessage from '@/models/processedMessage';
 
-const OWNER_NUMBER = process.env.WHATSAPP_OWNER!; // With country code
 const WHATSAPP_API_URL = "https://graph.facebook.com/v18.0/";
 const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID!;
 const TOKEN = process.env.WHATSAPP_ACCESS_TOKEN!;
+const OWNER_NUMBER = process.env.WHATSAPP_OWNER!;
 
 // for verification 
 export async function GET(req: NextRequest) {
@@ -34,97 +35,174 @@ export async function GET(req: NextRequest) {
 
 
 
+// export async function POST(req: NextRequest) {
+//   const body = await req.json();
+
+//   console.log(body);
+
+//   const entry = body.entry?.[0];
+//   const changes = entry?.changes?.[0];
+//   const message = changes?.value?.messages?.[0];
+//   console.log(message , "message");
+//   const msgText = message?.text?.body?.trim().toLowerCase();
+
+//   if (!message) return NextResponse.json({ success: true });
+
+//   const from = message.from; // WhatsApp number of sender
+//   let phone = from;
+//   if (phone.startsWith("91") && phone.length === 12) {
+//   phone = phone.slice(2); // becomes '9876543210'
+//   }
+//   const name = message?.profile?.name || "User";
+
+//   if (message?.type === "interactive" && message?.interactive?.type === "button_reply") {
+//   const payload = message.interactive.button_reply.id; // e.g., "invoice_1:67703ddd94a311b22a936043"
+//   const [invoiceType, clientId] = payload.split(":");
+
+//   const invoiceIndex = parseInt(invoiceType.split("_")[1], 10) - 1;
+
+//   // Validate invoiceIndex
+//   if (isNaN(invoiceIndex) || invoiceIndex < 0 || invoiceIndex > 2) {
+//     await sendTextMessage(from, "⚠️ Invalid invoice selection.");
+//     return new Response("OK");
+//   }
+
+//   // Get only the first 3 invoice IDs
+//   const client = await Client.findById(clientId).select("invoices");
+//   const invoiceIds = client?.invoices?.slice(0, 3) || [];
+
+//   if (!invoiceIds.length) {
+//     await sendTextMessage(from, `❌ No invoices found for ${name}`);
+//     return new Response("OK");
+//   }
+
+//   const targetInvoiceId = invoiceIds[invoiceIndex];
+
+//   if (!targetInvoiceId) {
+//     await sendTextMessage(from, `⚠️ Invoice not created on system`);
+//     return new Response("OK");
+//   }
+
+//   // Fetch the specific invoice
+//   const invoice = await Invoice.findById(targetInvoiceId);
+
+//   if (!invoice) {
+//     await sendTextMessage(from, "⚠️ Invoice not found.");
+//     return new Response("OK");
+//   }
+
+//   if (invoice.cloudinaryUrl) {
+//     await sendTextMessage(from, "Just a second...");
+//     await sendMediaMessage(from, invoice.cloudinaryUrl);
+//   } else {
+//     await sendTextMessage(from, "📎 Image not available for this invoice.");
+//   }
+
+//   return new Response("OK");
+// }
+
+
+//   if(msgText === "hi i am shivam"){
+//     await sendTextMessage(from, "👋 Hi there - I am Shivam");
+    
+//     return new Response("OK");
+//     // return NextResponse.json({ status: "done" });
+//   }else{
+
+//     await sendTextMessage(from, "👋 Welcome to Billz - A WebApp made by *Shivam Krishnaohan Gupta*");
+    
+//     const client = await Client.findOne({ contact : phone });
+//     console.log(phone , "this is my phone");
+//     console.log(client , "clients name");
+//     if (client) {
+//       // Send 3 buttons: latest 3 invoices
+//       await sendInvoiceOptions(from , name , client._id );
+//       return new Response("OK");
+//     }else{
+//       await sendTextMessage(from, "Sorry We dont have any Any client registered on this No.  Please Reach to Shree Balaji Fruits and Vegitables");
+//       return new Response("OK");
+//     }
+//   }
+
+//   return NextResponse.json({ status: "done" });
+// }
+
 export async function POST(req: NextRequest) {
   const body = await req.json();
-
-  console.log(body);
-
-  const entry = body.entry?.[0];
-  const changes = entry?.changes?.[0];
-  const message = changes?.value?.messages?.[0];
-  console.log(message , "message");
-  const msgText = message?.text?.body?.trim().toLowerCase();
+  const message = body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
 
   if (!message) return NextResponse.json({ success: true });
 
-  const from = message.from; // WhatsApp number of sender
-  let phone = from;
-  if (phone.startsWith("91") && phone.length === 12) {
-  phone = phone.slice(2); // becomes '9876543210'
-  }
-  const name = message?.profile?.name || "User";
+  // ✅ Return quickly
+  const response = new Response("OK", { status: 200 });
 
-  if (message?.type === "interactive" && message?.interactive?.type === "button_reply") {
-  const payload = message.interactive.button_reply.id; // e.g., "invoice_1:67703ddd94a311b22a936043"
-  const [invoiceType, clientId] = payload.split(":");
+  // ✅ Process asynchronously
+  (async () => {
+    const messageId = message.id;
+    const from = message.from;
+    let phone = from;
+    if (phone.startsWith("91") && phone.length === 12) phone = phone.slice(2);
 
-  const invoiceIndex = parseInt(invoiceType.split("_")[1], 10) - 1;
+    // ✅ Check if already processed
+    const alreadyHandled = await ProcessedMessage.findOne({ messageId });
+    if (alreadyHandled) return;
 
-  // Validate invoiceIndex
-  if (isNaN(invoiceIndex) || invoiceIndex < 0 || invoiceIndex > 2) {
-    await sendTextMessage(from, "⚠️ Invalid invoice selection.");
-    return new Response("OK");
-  }
+    // ✅ Save message ID to avoid reprocessing
+    await ProcessedMessage.create({ messageId });
 
-  // Get only the first 3 invoice IDs
-  const client = await Client.findById(clientId).select("invoices");
-  const invoiceIds = client?.invoices?.slice(0, 3) || [];
+    const msgText = message?.text?.body?.trim().toLowerCase();
+    const name = message?.profile?.name || "User";
 
-  if (!invoiceIds.length) {
-    await sendTextMessage(from, `❌ No invoices found for ${name}`);
-    return new Response("OK");
-  }
+    // === Button Reply Flow ===
+    if (message?.type === "interactive" && message?.interactive?.type === "button_reply") {
+      const payload = message.interactive.button_reply.id;
+      const [invoiceType, clientId] = payload.split(":");
+      const invoiceIndex = parseInt(invoiceType.split("_")[1], 10) - 1;
 
-  const targetInvoiceId = invoiceIds[invoiceIndex];
+      if (isNaN(invoiceIndex) || invoiceIndex < 0 || invoiceIndex > 2) {
+        await sendTextMessage(from, "⚠️ Invalid invoice selection.");
+        return;
+      }
 
-  if (!targetInvoiceId) {
-    await sendTextMessage(from, `⚠️ Invoice not created on system`);
-    return new Response("OK");
-  }
+      const client = await Client.findById(clientId).select("invoices");
+      const invoiceIds = client?.invoices?.slice(0, 3) || [];
+      const targetInvoiceId = invoiceIds[invoiceIndex];
+      const invoice = targetInvoiceId && await Invoice.findById(targetInvoiceId);
 
-  // Fetch the specific invoice
-  const invoice = await Invoice.findById(targetInvoiceId);
+      if (!invoice) {
+        await sendTextMessage(from, "⚠️ Invoice not found.");
+        return;
+      }
 
-  if (!invoice) {
-    await sendTextMessage(from, "⚠️ Invoice not found.");
-    return new Response("OK");
-  }
+      if (invoice.cloudinaryUrl) {
+        await sendTextMessage(from, "Just a second...");
+        await sendMediaMessage(from, invoice.cloudinaryUrl);
+      } else {
+        await sendTextMessage(from, "📎 Image not available for this invoice.");
+      }
 
-  if (invoice.cloudinaryUrl) {
-    await sendTextMessage(from, "Just a second...");
-    await sendMediaMessage(from, invoice.cloudinaryUrl);
-  } else {
-    await sendTextMessage(from, "📎 Image not available for this invoice.");
-  }
-
-  return new Response("OK");
-}
-
-
-  if(msgText === "hi i am shivam"){
-    await sendTextMessage(from, "👋 Hi there - I am Shivam");
-    
-    return new Response("OK");
-    // return NextResponse.json({ status: "done" });
-  }else{
-
-    await sendTextMessage(from, "👋 Welcome to Billz - A WebApp made by *Shivam Krishnaohan Gupta*");
-    
-    const client = await Client.findOne({ contact : phone });
-    console.log(phone , "this is my phone");
-    console.log(client , "clients name");
-    if (client) {
-      // Send 3 buttons: latest 3 invoices
-      await sendInvoiceOptions(from , name , client._id );
-      return new Response("OK");
-    }else{
-      await sendTextMessage(from, "Sorry We dont have any Any client registered on this No.  Please Reach to Shree Balaji Fruits and Vegitables");
-      return new Response("OK");
+      return;
     }
-  }
 
-  return NextResponse.json({ status: "done" });
+    // === Normal Text Flow ===
+    if (msgText === "hi i am shivam") {
+      await sendTextMessage(from, "👋 Hi there - I am Shivam");
+      return;
+    } else {
+      await sendTextMessage(from, "👋 Welcome to Billz - A WebApp made by *Shivam Krishnaohan Gupta*");
+
+      const client = await Client.findOne({ contact: phone });
+      if (client) {
+        await sendInvoiceOptions(from, name, client._id);
+      } else {
+        await sendTextMessage(from, "Sorry, no client registered with this number. Please reach out to Shree Balaji Fruits and Vegetables.");
+      }
+    }
+  })();
+
+  return response;
 }
+
 
 async function sendTextMessage(to: string, text: string) {
   await axios.post(`${WHATSAPP_API_URL}${PHONE_NUMBER_ID}/messages`, {
