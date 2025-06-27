@@ -264,10 +264,8 @@ const fetchClients = async () => {
     
 
     return (
-      <div >
-
-        {/* {loadin/>} Show loader while loading */}
-        <div className="w-full border py-3 rounded-lg px-2 bg-gray-50 sm:mx-auto sm:px-4 sm:py-8 sm:bg-gradient-to-br sm:from-white sm:via-gray-50 sm:to-gray-100 sm:bg-opacity-60 sm:backdrop-blur-md sm:rounded-lg sm:border sm:border-gray-400 sm:border-opacity-30 sm:shadow-lg ">
+      
+        <div className="w-full min-h-svh border py-3 rounded-lg px-2 bg-gray-50 sm:mx-auto sm:px-4 sm:py-8 sm:bg-gradient-to-br sm:from-white sm:via-gray-50 sm:to-gray-100 sm:bg-opacity-60 sm:backdrop-blur-md sm:rounded-lg sm:border sm:border-gray-400 sm:border-opacity-30 sm:shadow-lg ">
         {showInvoice && <InvoicePage invoiceDetail={invoiceDetail} butFun={showIn} download={download} invoiceId={invoiceId}  />}
           <div className="flex justify-between" >
           <h1 className="text-3xl font-bold mb-6  text-black">Create Invoice</h1>
@@ -680,6 +678,6 @@ const fetchClients = async () => {
             </div>
           </form>
         </div>
-      </div>
+      
     );
   }

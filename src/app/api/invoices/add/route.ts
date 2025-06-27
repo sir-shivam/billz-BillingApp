@@ -1,13 +1,11 @@
-import { connectDB } from "@/dbConfig/dbConfig";// Replace with your MongoDB connection helper
+import { connectDB } from "@/dbConfig/dbConfig"; // Replace with your MongoDB connection helper
 import Invoice from "@/models/invoices";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import Business from "@/models/businessModel";
 import Client from "@/models/clientModel";
 
-
 connectDB();
-
 
 interface JwtPayloadWithUserId {
   userId: string;
@@ -18,35 +16,35 @@ interface JwtPayloadWithUserId {
   exp?: number;
 }
 export async function POST(req: NextRequest) {
-  const retToken = req.cookies.get('token')?.value || '';
-          if (!retToken) {
-            return NextResponse.json({ error: "Authentication token is missing" }, { status: 401 });
-          }
-      
-          // Decode and verify the token
-          let decoded ;
-          try {
-            decoded = jwt.verify(retToken, process.env.JWT_SECRET || "your-secret-key") as JwtPayloadWithUserId;
-            console.log(decoded , "decoding");
-            console.log(decoded.businesses[0] , "businesslist");
-          } catch (error) {
-            return NextResponse.json({ error: error }, { status: 401 });
-          }
-  
-          const businessId = decoded.businesses[0]
+  const retToken = req.cookies.get("token")?.value || "";
+  if (!retToken) {
+    return NextResponse.json(
+      { error: "Authentication token is missing" },
+      { status: 401 }
+    );
+  }
 
-
-
-
-  
+  // Decode and verify the token
+  let decoded;
   try {
-   
+    decoded = jwt.verify(
+      retToken,
+      process.env.JWT_SECRET || "your-secret-key"
+    ) as JwtPayloadWithUserId;
+    console.log(decoded, "decoding");
+    console.log(decoded.businesses[0], "businesslist");
+  } catch (error) {
+    return NextResponse.json({ error: error }, { status: 401 });
+  }
+
+  const businessId = decoded.businesses[0];
+
+  try {
     const reqBody = await req.json();
     // Extract the invoice data from the request body
     const {
       billNo,
       clientName,
-      clientId,
       selectedClientId,
       selectedItemId,
       invoiceDate,
@@ -58,19 +56,29 @@ export async function POST(req: NextRequest) {
       total,
     } = reqBody;
 
-    console.log(selectedItemId , "hello");
-    console.log(billNo, invoiceDate, items, total, selectedClientId , "check")
+    console.log(selectedItemId, "hello");
+    console.log(billNo, invoiceDate, items, total, selectedClientId, "check");
 
     // Validate required fields
-    if (!billNo || !clientName || !invoiceDate || !items || !total || !selectedClientId ) {
-      return NextResponse.json({ error: "Missing required fields" }, {status: 400});
+    if (
+      !billNo ||
+      !clientName ||
+      !invoiceDate ||
+      !items ||
+      !total ||
+      !selectedClientId
+    ) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
     // Create and save the invoice
-    const newInvoice =  new Invoice({
+    const newInvoice = new Invoice({
       billNo,
       clientName,
-      clientId,
+      clientId: selectedClientId,
       businessId,
       invoiceDate,
       balance,
@@ -85,36 +93,53 @@ export async function POST(req: NextRequest) {
 
     const updatedBusiness = await Business.findByIdAndUpdate(
       businessId,
-      { $push: { invoices: newInvoice._id } }, // Push the new invoice ID into the invoices array
+      {
+        $push: {
+          invoices: {
+            $each: [newInvoice._id],
+            $position: 0, // insert at beginning
+          },
+        },
+      },
       { new: true }
-     ) // Return the updated document
+    ); // Return the updated document
 
-     await Client.findByIdAndUpdate(
+    const c = await Client.findByIdAndUpdate(
       selectedClientId,
       {
         $set: {
-          prevBalance: (total+balance-paid) ,
+          prevBalance: total + balance - paid,
           lastPaidAmount: paid,
         },
-        $push: { invoices: newInvoice._Id }, // Push the new invoice ID into the array
+        $push: {
+          invoices: {
+            $each: [newInvoice._id],
+            $position: 0,
+          },
+        },
       },
-       // Push the new invoice ID into the invoices array
       { new: true }
-     )
-     console.log(updatedBusiness , "hello1");
+    );
+    console.log(c, "hello1");
 
     return NextResponse.json({
       message: "Invoice created successfully",
       invoice: newInvoice,
     });
-  }  catch (error: unknown) {
+  } catch (error: unknown) {
     // TypeScript will now require you to assert the type of 'error' before using it.
     if (error instanceof Error) {
       console.error("Error creating invoice:", error.message);
-      return NextResponse.json({ message: "Internal Server Error", error: error.message }, { status: 500 });
+      return NextResponse.json(
+        { message: "Internal Server Error", error: error.message },
+        { status: 500 }
+      );
     } else {
       console.error("Unknown error occurred");
-      return NextResponse.json({ message: "Internal Server Error", error: "Unknown error occurred" }, { status: 500 });
+      return NextResponse.json(
+        { message: "Internal Server Error", error: "Unknown error occurred" },
+        { status: 500 }
+      );
     }
-  };
+  }
 }

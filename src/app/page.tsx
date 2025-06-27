@@ -22,6 +22,9 @@ export default function Home() {
         <Link href="/login" className="bg-white hover:bg-gray-100 text-green-600 font-bold py-2 px-4 rounded border border-green-600 transition duration-300">
           Log In
         </Link>
+        <Link href="/dashboard" className="bg-white hover:bg-gray-100 text-green-600 font-bold py-2 px-4 rounded border border-green-600 transition duration-300">
+          Dashbord
+        </Link>
       </div>
       <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {['Stock Management', 'Invoicing', 'History Tracking', 'Multi-User Access'].map((feature) => (

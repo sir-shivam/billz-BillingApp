@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import Client from '@/models/clientModel';
+import Invoice from '@/models/invoices';
 
 const OWNER_NUMBER = process.env.WHATSAPP_OWNER!; // With country code
 const WHATSAPP_API_URL = "https://graph.facebook.com/v18.0/";
@@ -57,21 +58,32 @@ export async function POST(req: NextRequest) {
   const payload = message.interactive.button_reply.id; // e.g., "invoice_1:67703ddd94a311b22a936043"
   const [invoiceType, clientId] = payload.split(":");
 
-  const client = await Client.findById(clientId).populate({
-    path: "invoices",
-    options: { sort: { createdAt: -1 }, limit: 3 }
-  });
+  const invoiceIndex = parseInt(invoiceType.split("_")[1], 10) - 1;
 
-  
-
-  if (!client || !client.invoices?.length) {
-    await sendTextMessage(from, "❌ No invoices found for this client.");
+  // Validate invoiceIndex
+  if (isNaN(invoiceIndex) || invoiceIndex < 0 || invoiceIndex > 2) {
+    await sendTextMessage(from, "⚠️ Invalid invoice selection.");
     return new Response("OK");
   }
 
-  const invoiceIndex = parseInt(invoiceType.split("_")[1], 10) - 1;
-  const invoice = client.invoices[invoiceIndex];
-  console.log(invoice , "this is index");
+  // Get only the first 3 invoice IDs
+  const client = await Client.findById(clientId).select("invoices");
+  const invoiceIds = client?.invoices?.slice(0, 3) || [];
+
+  if (!invoiceIds.length) {
+    await sendTextMessage(from, `❌ No invoices found for ${name}`);
+    return new Response("OK");
+  }
+
+  const targetInvoiceId = invoiceIds[invoiceIndex];
+
+  if (!targetInvoiceId) {
+    await sendTextMessage(from, `⚠️ Invoice not created on system`);
+    return new Response("OK");
+  }
+
+  // Fetch the specific invoice
+  const invoice = await Invoice.findById(targetInvoiceId);
 
   if (!invoice) {
     await sendTextMessage(from, "⚠️ Invoice not found.");
@@ -79,7 +91,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (invoice.cloudinaryUrl) {
-    await sendTextMessage(from, "Just a Second...");
+    await sendTextMessage(from, "Just a second...");
     await sendMediaMessage(from, invoice.cloudinaryUrl);
   } else {
     await sendTextMessage(from, "📎 Image not available for this invoice.");
@@ -88,24 +100,28 @@ export async function POST(req: NextRequest) {
   return new Response("OK");
 }
 
+
   if(msgText === "hi i am shivam"){
-    await sendTextMessage(from, "👋 Hi to Myself - I am Shivam");
+    await sendTextMessage(from, "👋 Hi there - I am Shivam");
     
-    return NextResponse.json({ status: "done" });
-  }
-
-
-
-  await sendTextMessage(from, "👋 Welcome to Billz - A WebApp made by *Shivam Krishnaohan Gupta*");
-
-  const client = await Client.findOne({ contact : phone });
-  console.log(phone , "this is my phone");
-  if (client) {
-    // Send 3 buttons: latest 3 invoices
-    await sendInvoiceOptions(from , name , client._id );
     return new Response("OK");
+    // return NextResponse.json({ status: "done" });
+  }else{
+
+    await sendTextMessage(from, "👋 Welcome to Billz - A WebApp made by *Shivam Krishnaohan Gupta*");
+    
+    const client = await Client.findOne({ contact : phone });
+    console.log(phone , "this is my phone");
+    console.log(client , "clients name");
+    if (client) {
+      // Send 3 buttons: latest 3 invoices
+      await sendInvoiceOptions(from , name , client._id );
+      return new Response("OK");
+    }else{
+      await sendTextMessage(from, "Sorry We dont have any Any client registered on this No.  Please Reach to Shree Balaji Fruits and Vegitables");
+      return new Response("OK");
+    }
   }
-  
 
   return NextResponse.json({ status: "done" });
 }

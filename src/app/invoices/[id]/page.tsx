@@ -25,7 +25,7 @@ export default function InvoiceDetailPage() {
 
   const fetchInvoice = async () => {
     try {
-      const res = await axios.get(`/api/invoices/${id}`);
+      const res = await axios.get(`/api/invoices/i/${id}`);
 const invoice = res.data.invoice;
 
 invoice.invoiceDate = new Date(invoice.invoiceDate).toLocaleDateString("en-IN", {
