@@ -1,25 +1,24 @@
 import mongoose from "mongoose";
 
+const MONGODB_URI = process.env.MONGO_URI!;
+let isConnected = false;
+
 export async function connectDB() {
-    try {
-        mongoose.connect(process.env.MONGO_URI!);
-        //once connect it will return a connect id
-        const connection = mongoose.connection;
-        // console.log(connection);
-        
-        connection.on('connected' , ()=> {
-            console.log("Mongo db connected successfully")
-            console.log('Registered models:', mongoose.connection.modelNames());
-        })
+  if (isConnected || mongoose.connection.readyState === 1) {
+    console.log("✅ MongoDB already connected");
+    return;
+  }
 
-        connection.on('error', ()=> {
-            console.log("MongoDb connection error, please make sure Mongodb is running");
-            process.exit();
-        })
+  try {
+    await mongoose.connect(MONGODB_URI, {
+      dbName: "billz", // optional: if your URI doesn't specify DB
+    });
 
-
-    } catch (error) {
-        console.log("something went wrong ");
-        console.log(error);
-    }
+    isConnected = true;
+    console.log("✅ MongoDB connected successfully");
+    console.log("📦 Registered models:", mongoose.connection.modelNames());
+  } catch (error) {
+    console.error("❌ MongoDB connection error:", error);
+    throw error;
+  }
 }
