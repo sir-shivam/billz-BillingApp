@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
   if (mode && token) {
     if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-      //console.log('WEBHOOK_VERIFIED');
+      console.log('WEBHOOK_VERIFIED');
       return new Response(challenge, { status: 200 });
     } else {
       return new Response('Forbidden', { status: 403 });
@@ -39,12 +39,12 @@ export async function GET(req: NextRequest) {
 // export async function POST(req: NextRequest) {
 //   const body = await req.json();
 
-//   //console.log(body);
+//   console.log(body);
 
 //   const entry = body.entry?.[0];
 //   const changes = entry?.changes?.[0];
 //   const message = changes?.value?.messages?.[0];
-//   //console.log(message , "message");
+//   console.log(message , "message");
 //   const msgText = message?.text?.body?.trim().toLowerCase();
 
 //   if (!message) return NextResponse.json({ success: true });
@@ -113,8 +113,8 @@ export async function GET(req: NextRequest) {
 //     await sendTextMessage(from, "👋 Welcome to Billz - A WebApp made by *Shivam Krishnaohan Gupta*");
     
 //     const client = await Client.findOne({ contact : phone });
-//     //console.log(phone , "this is my phone");
-//     //console.log(client , "clients name");
+//     console.log(phone , "this is my phone");
+//     console.log(client , "clients name");
 //     if (client) {
 //       // Send 3 buttons: latest 3 invoices
 //       await sendInvoiceOptions(from , name , client._id );
@@ -132,34 +132,34 @@ export async function POST(req: NextRequest) {
   await connectDB();
   const body = await req.json();
   const message = body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
-  //console.log(message );
+  console.log(message );
 
   if (!message) return NextResponse.json({ success: true });
 
   // ✅ Return quickly
   const response = new Response("OK", { status: 200 });
 
-  //console.log("moving further");
+  console.log("moving further");
 
   // ✅ Process asynchronously
   (async () => {
-    //console.log("entered asyn");
+    console.log("entered asyn");
     const messageId = message.id;
     const from = message.from;
     let phone = from;
     if (phone.startsWith("91") && phone.length === 12) phone = phone.slice(2);
 
     // ✅ Check if already processed
-    //console.log(messageId , "id");
-    //console.log("message checking");
+    console.log(messageId , "id");
+    console.log("message checking");
     const alreadyHandled = await ProcessedMessage.findOne({ messageId });
     if (alreadyHandled) {
-      //console.log("message same");
+      console.log("message same");
       return;}
 
     // ✅ Save message ID to avoid reprocessing
     await ProcessedMessage.create({ messageId });
-    //console.log("message stored");
+    console.log("message stored");
     const msgText = message?.text?.body?.trim().toLowerCase();
     const name = message?.profile?.name || "User";
 
@@ -168,7 +168,7 @@ export async function POST(req: NextRequest) {
       const payload = message.interactive.button_reply.id;
       const [invoiceType, clientId] = payload.split(":");
       const invoiceIndex = parseInt(invoiceType.split("_")[1], 10) - 1;
-      //console.log("enterd in interactive");
+      console.log("enterd in interactive");
       if (isNaN(invoiceIndex) || invoiceIndex < 0 || invoiceIndex > 2) {
         await sendTextMessage(from, "⚠️ Invalid invoice selection.");
         return;
@@ -209,7 +209,7 @@ export async function POST(req: NextRequest) {
       }
     }
   })();
-  //console.log("ending");
+  console.log("ending");
   return response;
 }
 
