@@ -128,38 +128,116 @@ export async function GET(req: NextRequest) {
 //   return NextResponse.json({ status: "done" });
 // }
 
+// export async function POST(req: NextRequest) {
+//   await connectDB();
+//   const body = await req.json();
+//   const message = body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+//   console.log(message );
+
+//   if (!message) return NextResponse.json({ success: true });
+
+//   // ✅ Return quickly
+//   const response = new Response("OK", { status: 200 });
+
+//   console.log("moving further");
+
+//   // ✅ Process asynchronously
+//   (async () => {
+//     console.log("entered asyn");
+//     const messageId = message.id;
+//     const from = message.from;
+//     let phone = from;
+//     if (phone.startsWith("91") && phone.length === 12) phone = phone.slice(2);
+
+//     // ✅ Check if already processed
+//     console.log(messageId , "id");
+//     console.log("message checking");
+//     const alreadyHandled = await ProcessedMessage.findOne({ messageId });
+//     if (alreadyHandled) {
+//       console.log("message same");
+//       return;}
+
+//     // ✅ Save message ID to avoid reprocessing
+//     await ProcessedMessage.create({ messageId });
+//     console.log("message stored");
+//     const msgText = message?.text?.body?.trim().toLowerCase();
+//     const name = message?.profile?.name || "User";
+
+//     // === Button Reply Flow ===
+//     if (message?.type === "interactive" && message?.interactive?.type === "button_reply") {
+//       const payload = message.interactive.button_reply.id;
+//       const [invoiceType, clientId] = payload.split(":");
+//       const invoiceIndex = parseInt(invoiceType.split("_")[1], 10) - 1;
+//       console.log("enterd in interactive");
+//       if (isNaN(invoiceIndex) || invoiceIndex < 0 || invoiceIndex > 2) {
+//         await sendTextMessage(from, "⚠️ Invalid invoice selection.");
+//         return;
+//       }
+
+//       const client = await Client.findById(clientId).select("invoices");
+//       const invoiceIds = client?.invoices?.slice(0, 3) || [];
+//       const targetInvoiceId = invoiceIds[invoiceIndex];
+//       const invoice = targetInvoiceId && await Invoice.findById(targetInvoiceId);
+
+//       if (!invoice) {
+//         await sendTextMessage(from, "⚠️ Invoice not found.");
+//         return;
+//       }
+
+//       if (invoice.cloudinaryUrl) {
+//         await sendTextMessage(from, "Just a second...");
+//         await sendMediaMessage(from, invoice.cloudinaryUrl);
+//       } else {
+//         await sendTextMessage(from, "📎 Image not available for this invoice.");
+//       }
+
+//       return;
+//     }
+
+//     // === Normal Text Flow ===
+//     if (msgText === "hi i am shivam") {
+//       await sendTextMessage(from, "👋 Hi there - I am Shivam");
+//       return;
+//     } else {
+//       await sendTextMessage(from, "👋 Welcome to Billz - A WebApp made by *Shivam Krishnaohan Gupta*");
+
+//       const client = await Client.findOne({ contact: phone });
+//       if (client) {
+//         await sendInvoiceOptions(from, name, client._id);
+//       } else {
+//         await sendTextMessage(from, "Sorry, no client registered with this number. Please reach out to Shree Balaji Fruits and Vegetables.");
+//       }
+//     }
+//   })();
+//   console.log("ending");
+//   return response;
+// }
 export async function POST(req: NextRequest) {
   await connectDB();
   const body = await req.json();
   const message = body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
-  console.log(message );
+  console.log(message);
 
   if (!message) return NextResponse.json({ success: true });
 
-  // ✅ Return quickly
-  const response = new Response("OK", { status: 200 });
+  const messageId = message.id;
+  const from = message.from;
+  let phone = from.startsWith("91") && from.length === 12 ? from.slice(2) : from;
 
   console.log("moving further");
+  console.log("entered async");
+  console.log(messageId, "id");
 
-  // ✅ Process asynchronously
-  (async () => {
-    console.log("entered asyn");
-    const messageId = message.id;
-    const from = message.from;
-    let phone = from;
-    if (phone.startsWith("91") && phone.length === 12) phone = phone.slice(2);
-
-    // ✅ Check if already processed
-    console.log(messageId , "id");
-    console.log("message checking");
+  try {
     const alreadyHandled = await ProcessedMessage.findOne({ messageId });
     if (alreadyHandled) {
-      console.log("message same");
-      return;}
+      console.log("⛔ Duplicate message");
+      return new Response("Already handled", { status: 200 });
+    }
 
-    // ✅ Save message ID to avoid reprocessing
     await ProcessedMessage.create({ messageId });
-    console.log("message stored");
+    console.log("✅ Message stored");
+
     const msgText = message?.text?.body?.trim().toLowerCase();
     const name = message?.profile?.name || "User";
 
@@ -168,10 +246,11 @@ export async function POST(req: NextRequest) {
       const payload = message.interactive.button_reply.id;
       const [invoiceType, clientId] = payload.split(":");
       const invoiceIndex = parseInt(invoiceType.split("_")[1], 10) - 1;
-      console.log("enterd in interactive");
+      console.log("➡️ In interactive");
+
       if (isNaN(invoiceIndex) || invoiceIndex < 0 || invoiceIndex > 2) {
         await sendTextMessage(from, "⚠️ Invalid invoice selection.");
-        return;
+        return new Response("OK");
       }
 
       const client = await Client.findById(clientId).select("invoices");
@@ -181,7 +260,7 @@ export async function POST(req: NextRequest) {
 
       if (!invoice) {
         await sendTextMessage(from, "⚠️ Invoice not found.");
-        return;
+        return new Response("OK");
       }
 
       if (invoice.cloudinaryUrl) {
@@ -191,13 +270,12 @@ export async function POST(req: NextRequest) {
         await sendTextMessage(from, "📎 Image not available for this invoice.");
       }
 
-      return;
+      return new Response("OK");
     }
 
     // === Normal Text Flow ===
     if (msgText === "hi i am shivam") {
       await sendTextMessage(from, "👋 Hi there - I am Shivam");
-      return;
     } else {
       await sendTextMessage(from, "👋 Welcome to Billz - A WebApp made by *Shivam Krishnaohan Gupta*");
 
@@ -208,10 +286,14 @@ export async function POST(req: NextRequest) {
         await sendTextMessage(from, "Sorry, no client registered with this number. Please reach out to Shree Balaji Fruits and Vegetables.");
       }
     }
-  })();
-  console.log("ending");
-  return response;
+
+    return new Response("OK");
+  } catch (error) {
+    console.error("❌ Error in webhook handler:", error);
+    return new Response("Internal Error", { status: 500 });
+  }
 }
+
 
 
 async function sendTextMessage(to: string, text: string) {
